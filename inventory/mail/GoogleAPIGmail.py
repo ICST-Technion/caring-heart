@@ -6,8 +6,10 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 
+from inventory.interfaces.IMail import IMail
 
-class Gmail(object):
+
+class Gmail(IMail):
     def __init__(self):
         self._scopes = ['https://www.googleapis.com/auth/gmail.readonly']
         path = os.path.dirname(os.path.realpath(__file__))
