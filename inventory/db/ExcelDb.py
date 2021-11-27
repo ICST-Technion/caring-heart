@@ -3,7 +3,7 @@ from openpyxl import load_workbook
 from inventory.interfaces.IDb import IDb
 
 
-class CExcelDb(IDb):
+class ExcelDb(IDb):
 
     def __init__(self, *args, **kwargs):
         self._filename = kwargs.get("filename")
