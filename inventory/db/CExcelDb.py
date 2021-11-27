@@ -1,4 +1,4 @@
-from parser.interfaces.IDb import IDb
+from inventory.interfaces.IDb import IDb
 
 
 class CExcelDb(IDb):
