@@ -1,9 +1,11 @@
 from openpyxl import load_workbook
 
+from extensions.MSingleton import Singleton
+from extensions.MCExtensions import with_metaclass
 from inventory.interfaces.IDb import IDb
 
 
-class ExcelDb(IDb):
+class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
 
     def __init__(self, *args, **kwargs):
         self._filename = kwargs.get("filename")
