@@ -19,6 +19,11 @@ class Controller(object):
         self._mail = MailProvider.GetMail("stub")
         self._parser = ParserProvider.GetParser("stub")
 
+    def _set_gmail(self):
+        self._db = DbProvider.GetDb("excel", filename=f'{os.path.dirname(os.path.realpath(__file__))}\\db\\template.xlsx')
+        self._mail = MailProvider.GetMail("gmailapi")
+        self._parser = ParserProvider.GetParser("stub")
+
     def run(self):
         self._set_stub()
         self._inventory = Inventory(self._db)
