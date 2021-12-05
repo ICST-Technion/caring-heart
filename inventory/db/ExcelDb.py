@@ -1,33 +1,72 @@
 from openpyxl import load_workbook
+from openpyxl.utils.cell import column_index_from_string as _col_idx
 import operator
 from extensions.MSingleton import Singleton
 from extensions.MCExtensions import with_metaclass
+from inventory.db.sheetname_getter import sheetname_getter
 from inventory.interfaces.IDb import IDb
+from itertools import islice
+from configparser import ConfigParser
+
+
+def col_idx(letter):
+    return _col_idx(letter) - 1
+
+
+def skip_first(iterable):
+    return islice(iterable, 1, None)
 
 
 class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
 
-    def __init__(self, *args, **kwargs):
-        self._filename = kwargs.get("filename", "template.xlsx")
+    @staticmethod
+    def from_config_file(config_path='config.ino'):
+        config = ConfigParser()
+        config.read(config_path)
+        return ExcelDb.from_config(config)
+
+    @staticmethod
+    def from_config(config: ConfigParser):
+        col_map = dict(config.items('columns'))
+        return ExcelDb(filename=config.get('main', 'excel_path'),
+                       columns=col_map)
+
+    def __init__(self,
+                 *args,
+                 filename="template.xlsx",
+                 sheetname_getter=sheetname_getter,
+                 columns=None,
+                 workbook_loader=None,
+                 **kwargs):
+        if columns is None:
+            columns = {"name": 'A', "address": 'B', "street": 'C', "city": 'D', "phone": 'E', "description": 'F',
+                       "category": 'G', "date": 'H', "comments": 'I', "email": 'J'}
+        if workbook_loader is None:
+            workbook_loader = lambda: load_workbook(filename=self._filename)
+        self._workbook_loader = workbook_loader
+        self._filename = filename
         self._wb = None
         self._sht = None
-        self._sheetname_getter = kwargs.get("sheetname_getter", lambda sheetnames: 'גיליון1')
-        self._columns = kwargs.get("columns", {"Name": 'A', "Address": 'B', "Street": 'C', "City": 'D', "Phone": 'E', "Description": 'F',
-                         "Category": 'G', "Date": 'H', "Comments": 'I', "Email": 'J'})
+        self._sheetname_getter = sheetname_getter
+        self._columns = columns
 
     def connect(self, *args, **kwargs):
-        self._wb = load_workbook(filename=self._filename)
+        self._wb = self._workbook_loader()
         self._sht = self._wb[self._sheetname_getter(self._wb.sheetnames)]
 
     def close(self):
         self._sht = None
         self._wb.close()
 
-    def insert(self, *args, **kwargs):
+    def insert(self, *args, sync=True, **kwargs):
         item = {self._columns[key]: value for key, value in kwargs.get("item").items()}
         with self:
             self._sht.append(item)
-            self._wb.save(filename=self._filename)
+            if sync:
+                self.sync_to_file()
+
+    def sync_to_file(self):
+        self._wb.save(filename=self._filename)
 
     def update(self, *args, **kwargs):
         pass
@@ -44,35 +83,40 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
         if action != 'where':
             raise NotImplementedError(f"{self.__class__.__name__} supports only where (e.g get('where', 'name' , '==', 'myname'))")
 
-        key, comparison, value = args
+        key, comparison, value = params
 
         key = key.lower()
         assert key in self._columns.keys()
-        col = self._columns[key]
+        col = col_idx(self._columns[key])
 
         if value is True:
             value = '1'
         if value is False:
             value = '0'
 
-        comparisons = {'==': operator.eq, '!=': operator.ne, '>=': operator.ge, '<=': operator.le, '>': operator.lt, '<': operator.lt}
+        comparisons = {'==': operator.eq, '!=': operator.ne, '>=': operator.ge, '<=': operator.le, '>': operator.gt, '<': operator.lt}
         assert comparison in comparisons.keys()
         cmp_func = comparisons[comparison]
 
         with self:
             cells_to_values = lambda row: list(map(lambda cell: cell.value, row))
-            rows = map(cells_to_values, self._sht.iter_rows())
+            rows = map(cells_to_values, skip_first(self._sht.iter_rows()))   # skip first headers row
             if 'order_by' in kwargs:
-                sortby_col = self._columns[kwargs['order_by']]
+                sortby_col = col_idx(self._columns[kwargs['order_by']])
                 rows = sorted(rows, key=lambda row: row[sortby_col], reverse=kwargs.get('reverse', False))
-            res = list(filter(lambda row: cmp_func(row[col], value), rows))
+            rows = list(filter(lambda row: cmp_func(row[col], value), rows))
             if 'limit' in kwargs:
-                res = res[:kwargs['limit']]
+                rows = rows[:kwargs['limit']]
+            res = [{name: row[col_idx(col)] for name, col in self._columns.items()} for row in rows]
         return res
 
     def __enter__(self):
         self.connect()
         return self
 
-    def __exit__(self):
-        self.close()
+    def __exit__(self, exc_type, exc_value, tb):
+        if exc_type is not None:
+            # traceback.print_exception(exc_type, exc_value, tb)
+            return False  # uncomment to pass exception through
+
+        return True

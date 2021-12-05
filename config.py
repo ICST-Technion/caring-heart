@@ -10,6 +10,10 @@ import os
 AtoZ = list(string.ascii_uppercase)
 NO_COLUMN = 'התעלם, הכנס הכל'
 CONFIG_FILE = 'config.ini'
+DEFAULT_COLUMNS = (
+    ('name', 'שם'), ('address', 'כתובת'), ('city', 'עיר'), ('phone', 'טלפון'), ('description', 'תיאור'),
+    ('category', 'קטגוריה'), ('date', 'תאריך'), ('comments', 'הערות')
+)
 
 
 @dataclass
@@ -93,10 +97,7 @@ class MyConfig:
 
 
 if __name__ == '__main__':
-    columns = ((name, 'עמודת ' + text, col) for col, (name, text) in zip(AtoZ, (
-        ('name', 'שם'), ('address', 'כתובת'), ('city', 'עיר'), ('phone', 'טלפון'), ('description', 'תיאור'),
-        ('category', 'קטגוריה'), ('date', 'תאריך'), ('comments', 'הערות')
-    )))
+    columns = ((name, 'עמודת ' + text, col) for col, (name, text) in zip(AtoZ, DEFAULT_COLUMNS))
     config_vars = (
         FileVarType('excel_path', 'קובץ האקסל', 'template.xlsx', section='main'),
         *map(lambda args: ColumnVarType(*args, section='columns'), columns),
@@ -113,7 +114,7 @@ if __name__ == '__main__':
     ]
 
     # Create the window
-    window = sg.Window("Demo", layout, element_justification='r')
+    window = sg.Window("הגדרות", layout, element_justification='r')
 
     # Create an event loop
     while True:
