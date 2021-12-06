@@ -64,7 +64,24 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(widget.title),
         ),
         body: Center(child: itemList(testList)),
+        bottomNavigationBar: BottomNavBar(),
       ),
+    );
+  }
+
+  BottomNavBar() {
+    return BottomNavigationBar(
+      currentIndex: 0, // this will be set when a new tab is tapped
+      items: [
+        BottomNavigationBarItem(
+          icon: new Icon(Icons.calendar_today_outlined),
+          label: 'מסלול יומי'
+        ),
+        BottomNavigationBarItem(
+          icon: new Icon(Icons.calendar_view_week),
+          label: 'מסלולים שבועיים'
+        )
+      ],
     );
   }
 
@@ -169,7 +186,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: ButtonStyle(
                   padding: MaterialStateProperty.all<EdgeInsets>(
                       const EdgeInsets.symmetric(vertical: 15)),
-                  overlayColor: MaterialStateProperty.all<Color>(Colors.green.withAlpha(20)),
+                  overlayColor: MaterialStateProperty.all<Color>(
+                      Colors.green.withAlpha(20)),
                 )),
           ),
           const VerticalDivider(width: 1),
