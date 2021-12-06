@@ -29,26 +29,31 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
     def from_config(config: ConfigParser):
         col_map = dict(config.items('columns'))
         return ExcelDb(filename=config.get('main', 'excel_path'),
-                       columns=col_map)
+                       key_column_map=col_map)
 
     def __init__(self,
                  *args,
                  filename="template.xlsx",
                  sheetname_getter=sheetname_getter,
-                 columns=None,
+                 key_column_map=None,
                  workbook_loader=None,
+                 boolean_keys=(),
                  **kwargs):
-        if columns is None:
-            columns = {"name": 'A', "address": 'B', "street": 'C', "city": 'D', "phone": 'E', "description": 'F',
+        if key_column_map is None:
+            key_column_map = {"name": 'A', "address": 'B', "street": 'C', "city": 'D', "phone": 'E', "description": 'F',
                        "category": 'G', "date": 'H', "comments": 'I', "email": 'J'}
         if workbook_loader is None:
             workbook_loader = lambda: load_workbook(filename=self._filename)
+
+        assert all(map(lambda col: col in key_column_map.keys(), boolean_keys))
+        self._boolean_keys = boolean_keys
+
         self._workbook_loader = workbook_loader
         self._filename = filename
         self._wb = None
         self._sht = None
         self._sheetname_getter = sheetname_getter
-        self._columns = columns
+        self._columns = key_column_map
 
     def connect(self, *args, **kwargs):
         self._wb = self._workbook_loader()
@@ -59,10 +64,10 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
         self._wb.close()
 
     def insert(self, *args, sync=True, **kwargs):
-        item = {self._columns[key]: value for key, value in kwargs.get("item").items()}
+        item = {self._columns[key]: self._sheet_format(key, value) for key, value in kwargs.get("item").items()}
         with self:
             self._sht.append(item)
-            if sync:
+            if sync and self._filename is not None:
                 self.sync_to_file()
 
     def sync_to_file(self):
@@ -89,10 +94,7 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
         assert key in self._columns.keys()
         col = col_idx(self._columns[key])
 
-        if value is True:
-            value = '1'
-        if value is False:
-            value = '0'
+        value = self._sheet_format(key, value)
 
         comparisons = {'==': operator.eq, '!=': operator.ne, '>=': operator.ge, '<=': operator.le, '>': operator.gt, '<': operator.lt}
         assert comparison in comparisons.keys()
@@ -107,8 +109,20 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
             rows = list(filter(lambda row: cmp_func(row[col], value), rows))
             if 'limit' in kwargs:
                 rows = rows[:kwargs['limit']]
-            res = [{name: row[col_idx(col)] for name, col in self._columns.items()} for row in rows]
+            sheet_value = lambda row, key, col_letter: self._from_sheet_format(key, row[col_idx(col_letter)])
+            res = [{key: sheet_value(row, key, col) for key, col in self._columns.items()} for row in rows]
         return res
+
+    def _sheet_format(self, key, value):
+        if type(value) is bool:
+            assert key in self._boolean_keys, f'Key {key} is not in boolean_keys'
+            return int(value)
+        return value
+
+    def _from_sheet_format(self, key, value):
+        if key in self._boolean_keys:
+            return bool(value)
+        return value
 
     def __enter__(self):
         self.connect()
