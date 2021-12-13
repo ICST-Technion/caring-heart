@@ -32,6 +32,12 @@ class Parser(IParser):
     def __init__(self):
         pass
 
+    def _extract(self, text, tag):
+        index = text.rfind(tag)
+        if index == -1:
+            raise Exception("Extract: tag not found!")
+        return text[:index], text[index + len(tag):].strip()
+
     def parse(self, text):
         tags = [
             'שם מלא:',
@@ -53,6 +59,6 @@ class Parser(IParser):
             'מופעל באמצעות:']
         content = []
         for tag in tags[::-1]:
-            text, extracted = extract(text, tag)
+            text, extracted = self._extract(text, tag)
             content.insert(0, extracted)
         return {tags[index]: item for index, item in enumerate(content)}
