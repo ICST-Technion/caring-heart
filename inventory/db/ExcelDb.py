@@ -39,8 +39,8 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
                  workbook_loader=None,
                  **kwargs):
         if columns is None:
-            columns = {"name": 'A', "address": 'B', "street": 'C', "city": 'D', "phone": 'E', "description": 'F',
-                       "category": 'G', "date": 'H', "comments": 'I', "email": 'J'}
+            columns = {"שם": 'A', "כתובת": 'B', "שכונה": 'C', "עיר": 'D', "נייד/טל'": 'E', "תאור": 'F',
+                       "קטגוריית מוצר": 'G', "תאריך": 'H', "הערות": 'I', "E-mail": 'J'}
         if workbook_loader is None:
             workbook_loader = lambda: load_workbook(filename=self._filename)
         self._workbook_loader = workbook_loader
