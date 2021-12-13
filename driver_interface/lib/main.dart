@@ -80,6 +80,10 @@ class _MyHomePageState extends State<MyHomePage> {
         BottomNavigationBarItem(
           icon: new Icon(Icons.calendar_view_week),
           label: 'מסלולים שבועיים'
+        ),
+        BottomNavigationBarItem(
+            icon: new Icon(Icons.more_horiz),
+            label: 'פריטים שנאספו'
         )
       ],
     );
