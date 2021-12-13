@@ -1,5 +1,5 @@
 """Region IDE imports"""
-from .interfaces.IDb import IDb
+from inventory.interfaces.IDb import IDb
 
 
 class Inventory(object):
