@@ -52,7 +52,10 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
 
     def connect(self, *args, **kwargs):
         self._wb = self._workbook_loader()
-        self._sht = self._wb[self._sheetname_getter(self._wb.sheetnames)]
+        sheet_name = self._sheetname_getter(self._wb.sheetnames)
+        if sheet_name not in self._wb:
+            self._create_new_sheet(sheet_name)
+        self._sht = self._wb[sheet_name]
 
     def close(self):
         self._sht = None
@@ -109,6 +112,11 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
                 rows = rows[:kwargs['limit']]
             res = [{name: row[col_idx(col)] for name, col in self._columns.items()} for row in rows]
         return res
+
+    def _create_new_sheet(self,name):
+        sheet = self._wb.create_sheet(name)
+        sheet.sheet_view.rightToLeft = True
+        sheet.append({value : key for key, value in self._columns.items()})
 
     def __enter__(self):
         self.connect()
