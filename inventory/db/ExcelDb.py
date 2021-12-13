@@ -3,7 +3,7 @@ from openpyxl.utils.cell import column_index_from_string as _col_idx
 import operator
 from extensions.MSingleton import Singleton
 from extensions.MCExtensions import with_metaclass
-from inventory.db.sheetname_getter import sheetname_getter
+from inventory.db.DateTimeHelper import sheetname_getter
 from inventory.interfaces.IDb import IDb
 from itertools import islice
 from configparser import ConfigParser
