@@ -61,7 +61,7 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
         self._sht = None
         self._wb.close()
 
-    def insert(self, *args, sync=True, **kwargs):
+    def insert(self, sync=True, *args, **kwargs):
         item = {self._columns[key]: value for key, value in kwargs.get("item").items()}
         with self:
             self._sht.append(item)
