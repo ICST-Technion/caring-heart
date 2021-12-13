@@ -61,4 +61,4 @@ class Parser(IParser):
         for tag in tags[::-1]:
             text, extracted = self._extract(text, tag)
             content.insert(0, extracted)
-        return {tags[index]: item for index, item in enumerate(content)}
+        return {tags[index][:-1]: item for index, item in enumerate(content)}
