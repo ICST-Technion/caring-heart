@@ -63,15 +63,18 @@ class Gmail(IMail):
         res = []
         msg_o = msg.get('message', {})
         msg_id = msg_o.get('id', None)
-        if msg_id is not None:
-            msg_ret = self._service.users().messages().get(userId='me', id=msg_id, format='raw').execute()
-            msg_bytes = base64.urlsafe_b64decode(msg_ret['raw'])
-            msg_from_str = email.message_from_string(msg_bytes.decode('utf-8'))
-            for part in msg_from_str.walk():
-                msg_from_str.get_payload()
-                if part.get_content_type() == 'text/plain':
-                    #res.append(base64.urlsafe_b64decode(part.get_payload()).decode("utf-8"))
-                    res.append(part.get_payload(decode=True).decode("utf-8"))
+        if msg_id is None:
+            return None
+        msg_ret = self._service.users().messages().get(userId='me', id=msg_id, format='raw').execute()
+        msg_bytes = base64.urlsafe_b64decode(msg_ret['raw'])
+        msg_from_str = email.message_from_string(msg_bytes.decode('utf-8'))
+        if "לב חש" not in msg_from_str['from']:
+            return None
+        for part in msg_from_str.walk():
+            msg_from_str.get_payload()
+            if part.get_content_type() == 'text/plain':
+                #res.append(base64.urlsafe_b64decode(part.get_payload()).decode("utf-8"))
+                res.append(part.get_payload(decode=True).decode("utf-8"))
         return "".join(res)
 
     def get_mail(self, **kwargs):
@@ -90,7 +93,9 @@ class Gmail(IMail):
 
         for rec in history:
             for msg in rec.get('messagesAdded', []):
-                res.append(self._handle_message(msg))
+                handled_msg = self._handle_message(msg)
+                if handled_msg is not None:
+                    res.append(self._handle_message(msg))
 
         self._set_local_id(remote_h_id)
         return res
