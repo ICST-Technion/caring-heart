@@ -28,7 +28,7 @@ class ExcelDb(IDb):
                  **kwargs):
         if key_column_map is None:
             key_column_map = {"שם": 'A', "כתובת": 'B', "שכונה": 'C', "עיר": 'D', "נייד/טל'": 'E', "תאור": 'F',
-                       "קטגוריית מוצר": 'G', "תאריך": 'H', "הערות": 'I', "E-mail": 'J'}
+                       "קטגוריית מוצר": 'G', "תאריך": 'H', "הערות": 'I', "E-mail": 'J', 'selection': 'K'}
         if workbook_loader is None:
             workbook_loader = lambda: load_workbook(filename=self._filename)
 
