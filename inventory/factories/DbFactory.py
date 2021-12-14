@@ -12,8 +12,10 @@ def args_from_config_file(config_path=constants.CONFIG_FILE, **kwargs):
 
 
 def args_from_config(config: ConfigParser, **kwargs):
-    col_map = dict(config.items('columns'))
-    col_map['selection'] = config.get('main', 'selection')
+    col_map = None
+    if config.has_section('columns'):
+        col_map = dict(config.items('columns'))
+        col_map['selection'] = config.get('main', 'selection')
     bool_keys = ['selection']
     return dict(filename=config.get('main', 'excel_path'),
                 boolean_keys=bool_keys,
