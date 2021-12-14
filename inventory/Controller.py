@@ -22,12 +22,12 @@ class Controller(object):
         self._parser = ParserProvider.GetParser("stub")
 
     def _set_gmail(self):
-        self._db = DbProvider.GetDb("excel", filename=f'{os.path.dirname(os.path.realpath(__file__))}\\db\\template.xlsx')
+        self._db = DbProvider.GetDb("excel")
         self._mail = MailProvider.GetMail("gmailapi")
         self._parser = ParserProvider.GetParser("mailparser")
 
     def _set_parser(self):
-        self._db = DbProvider.GetDb("excel", filename=f'{os.path.dirname(os.path.realpath(__file__))}\\db\\template.xlsx')
+        self._db = DbProvider.GetDb("excel")
         self._mail = MailProvider.GetMail("stub")
         self._parser = ParserProvider.GetParser("mailparser")
 
