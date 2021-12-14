@@ -8,8 +8,6 @@ from inventory.factories.ConverterFactory import ConverterProvider
 from inventory.Inventory import Inventory
 
 
-
-
 class Controller(object):
     def __init__(self):
         self._db = None
@@ -26,7 +24,7 @@ class Controller(object):
     def _set_gmail(self):
         self._db = DbProvider.GetDb("excel", filename=f'{os.path.dirname(os.path.realpath(__file__))}\\db\\template.xlsx')
         self._mail = MailProvider.GetMail("gmailapi")
-        self._parser = ParserProvider.GetParser("stub")
+        self._parser = ParserProvider.GetParser("mailparser")
 
     def _set_parser(self):
         self._db = DbProvider.GetDb("excel", filename=f'{os.path.dirname(os.path.realpath(__file__))}\\db\\template.xlsx')
@@ -34,7 +32,7 @@ class Controller(object):
         self._parser = ParserProvider.GetParser("mailparser")
 
     def run(self):
-        self._set_parser()
+        self._set_gmail()
         self._inventory = Inventory(self._db)
         while True:
             try:
