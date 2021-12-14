@@ -22,17 +22,17 @@ class ExcelDb(IDb):
                  *args,
                  filename="template.xlsx",
                  sheetname_getter=sheetname_getter,
-                 columns=None,
+                 key_column_map=None,
                  workbook_loader=None,
                  boolean_keys=(),
                  **kwargs):
-        if columns is None:
-            columns = {"שם": 'A', "כתובת": 'B', "שכונה": 'C', "עיר": 'D', "נייד/טל'": 'E', "תאור": 'F',
+        if key_column_map is None:
+            key_column_map = {"שם": 'A', "כתובת": 'B', "שכונה": 'C', "עיר": 'D', "נייד/טל'": 'E', "תאור": 'F',
                        "קטגוריית מוצר": 'G', "תאריך": 'H', "הערות": 'I', "E-mail": 'J'}
         if workbook_loader is None:
             workbook_loader = lambda: load_workbook(filename=self._filename)
 
-        assert all(map(lambda col: col in columns.keys(), boolean_keys))
+        assert all(map(lambda col: col in key_column_map.keys(), boolean_keys))
         self._boolean_keys = boolean_keys
 
         self._workbook_loader = workbook_loader
@@ -40,7 +40,7 @@ class ExcelDb(IDb):
         self._wb = None
         self._sht = None
         self._sheetname_getter = sheetname_getter
-        self._columns = columns
+        self._columns = key_column_map
 
     def connect(self, *args, **kwargs):
         self._wb = self._workbook_loader()
