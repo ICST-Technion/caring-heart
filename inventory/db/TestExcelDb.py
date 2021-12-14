@@ -24,8 +24,8 @@ class TestExcelDb(unittest.TestCase):
 
     def test_get_eq(self):
         excel = self.get_excel()
-        item = excel.get('where', 'a', '==', 'a2')[0]
-        self.assertEqual(item, self.item(['a2', 2, 2]))
+        items = excel.get('where', 'a', '==', 'a2')
+        self.assertEqual(items[0], self.item(['a2', 2, 2]))
 
     def test_get_gt(self):
         excel = self.get_excel()
@@ -49,7 +49,7 @@ class TestExcelDb(unittest.TestCase):
         excel.insert(item=inserted_item3)
         items = excel.get('where', 'b', '==', False)
         self.assertEqual(items, [inserted_item2, inserted_item3])
-
+        pass
 
 
 if __name__ == '__main__':
