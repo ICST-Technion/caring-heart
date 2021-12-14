@@ -17,19 +17,8 @@ def skip_first(iterable):
     return islice(iterable, 1, None)
 
 
-class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
-
-    @staticmethod
-    def from_config_file(config_path='config.ino'):
-        config = ConfigParser()
-        config.read(config_path)
-        return ExcelDb.from_config(config)
-
-    @staticmethod
-    def from_config(config: ConfigParser):
-        col_map = dict(config.items('columns'))
-        return ExcelDb(filename=config.get('main', 'excel_path'),
-                       key_column_map=col_map)
+# class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
+class ExcelDb(IDb):
 
     def __init__(self,
                  *args,
@@ -76,42 +65,63 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
     def update(self, *args, **kwargs):
         pass
 
-    def get(self, *args, **kwargs):
+    def _process_get_params(self, *args, **kwargs):
         """
-        Only 'where' supported with '==', '!=', '>=', '<=', '>', '<'
-        optional order_by, reverse and limit
-        Example: get('where', 'age', '>=', 18, order_by='age', reverse=False, limit=5)  # youngest 5 above 18
-        'age' must be a column found in 'columns' dict at __init__
+        Returns pre_process: List[List[Any]] -> List[List[Any]],
+                filter_predicate : List[Any] -> bool,
+                post_process: List[List[Any]] -> List[List[Any]]
         """
         action, *params = args
         action = action.lower()
-        if action != 'where':
-            raise NotImplementedError(f"{self.__class__.__name__} supports only where (e.g get('where', 'name' , '==', 'myname'))")
+        supported = ['where', 'all']
+        if action not in supported:
+            raise NotImplementedError(
+                f"{self.__class__.__name__} supports only {','.join(supported)} (e.g get('where', 'name' , '==', 'myname'))")
+        if action == 'all':
+            return lambda x: x, lambda r: True, lambda x: x
 
         key, comparison, value = params
 
         key = key.lower()
         assert key in self._columns.keys()
         col = col_idx(self._columns[key])
-
         value = self._sheet_format(key, value)
 
-        comparisons = {'==': operator.eq, '!=': operator.ne, '>=': operator.ge, '<=': operator.le, '>': operator.gt, '<': operator.lt}
+        comparisons = {'==': operator.eq, '!=': operator.ne, '>=': operator.ge, '<=': operator.le, '>': operator.gt,
+                       '<': operator.lt}
         assert comparison in comparisons.keys()
         cmp_func = comparisons[comparison]
+
+        pre_process = lambda x: x
+        if 'order_by' in kwargs:
+            sortby_col = col_idx(self._columns[kwargs['order_by']])
+            pre_process = lambda rows: sorted(rows, key=lambda row: row[sortby_col], reverse=kwargs.get('reverse', False))
+
+        filter_predicate = lambda row: cmp_func(row[col], value)
+        post_process = lambda x: x
+        if 'limit' in kwargs:
+            post_process = lambda rows: islice(rows, 0, kwargs['limit'])
+        return pre_process, filter_predicate, post_process
+
+    def get(self, *args, **kwargs):
+        """
+        'where' is supported with '==', '!=', '>=', '<=', '>', '<'
+        'all' is supported without additional args
+        optional order_by, reverse and limit
+        Example: get('where', 'age', '>=', 18, order_by='age', reverse=False, limit=5)  # youngest 5 above 18
+        'age' must be a column found in 'columns' dict at __init__
+        """
+        pre_process, filter_predicate, post_process = self._process_get_params(*args, **kwargs)
 
         with self:
             cells_to_values = lambda row: list(map(lambda cell: cell.value, row))
             rows = map(cells_to_values, skip_first(self._sht.iter_rows()))   # skip first headers row
-            if 'order_by' in kwargs:
-                sortby_col = col_idx(self._columns[kwargs['order_by']])
-                rows = sorted(rows, key=lambda row: row[sortby_col], reverse=kwargs.get('reverse', False))
-            rows = list(filter(lambda row: cmp_func(row[col], value), rows))
-            if 'limit' in kwargs:
-                rows = rows[:kwargs['limit']]
-            sheet_value = lambda row, key, col_letter: self._from_sheet_format(key, row[col_idx(col_letter)])
-            res = [{key: sheet_value(row, key, col) for key, col in self._columns.items()} for row in rows]
-        return res
+            pre_processed = pre_process(rows)
+            filtered = list(filter(filter_predicate, pre_processed))
+            post_processed = post_process(filtered)
+            user_format_value = lambda row, key, col_letter: self._from_sheet_format(key, row[col_idx(col_letter)])
+            res = [{key: user_format_value(row, key, col) for key, col in self._columns.items()} for row in post_processed]
+            return res
 
     def _sheet_format(self, key, value):
         if type(value) is bool:
