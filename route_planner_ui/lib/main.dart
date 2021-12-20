@@ -1,9 +1,9 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
-import 'dart:ui';
+import 'dart:html';
+import 'dart:ui' as ui;
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
 import 'package:tuple/tuple.dart';
@@ -124,11 +124,13 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title, required this.itemList})
+  MyHomePage({Key? key, required this.title, required this.itemList})
       : super(key: key);
 
   final String title;
   final List<Item> itemList;
+  List<Item> selectedItems = [];
+  String currentMapSrc = '';
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -136,8 +138,30 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   bool _isAscending = true;
-  int _currentSortColumn = 2;
   Size _size = Size(1920, 1080);
+  IFrameElement mapElement = IFrameElement();
+  Widget map = Container();
+  String apiKey = 'AIzaSyDQG8XUHA4I-7uSMU6Ph9rVSd9P2hsn-Sw';
+
+  @override
+  void initState() {
+    widget.currentMapSrc = 'https://maps.openrouteservice.org/';
+    mapElement.src = widget.currentMapSrc;
+    mapElement.style.border = 'none';
+    mapElement.width = _size.width.toString();
+    mapElement.height = (_size.height / 2).toString();
+    // ignore: undefined_prefixed_name
+    ui.platformViewRegistry.registerViewFactory(
+      'iframeElement',
+      (int viewId) => mapElement,
+    );
+    map = HtmlElementView(
+      key: UniqueKey(),
+      viewType: 'iframeElement',
+    );
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -154,24 +178,74 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   RoutePlanner() {
-    return ItemList();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        SizedBox(
+          width: _size.width / 1.5,
+          height: _size.height,
+          child: Scaffold(
+            floatingActionButton: FloatingActionButton(tooltip: 'שליחה', child: Icon(Icons.send), onPressed: ()=>SendRoute(),),
+            body: SingleChildScrollView(
+              child: Column(children: [
+                ItemList(),
+                Divider(thickness: 2),
+                Text(
+                  'המוצרים שבחרת:',
+                  style: TextStyle(fontSize: 20),
+                ),
+                Divider(thickness: 2),
+                SelectedItemList()
+              ]),
+            ),
+          ),
+        ),
+        MyMap()
+      ],
+    );
   }
 
   ItemList() {
     return Column(
       children: [
-        getItem(context, 0),
+        Container(
+            child: getItem(context, -1), margin: EdgeInsets.only(top: 10)),
         Container(
           margin: EdgeInsets.only(top: 10),
-          height: _size.height / 3,
+          height: _size.height / 2.6,
           child: ListView.builder(
               shrinkWrap: true,
-              itemCount: 30,
-                  //Provider.of<ItemListProvider>(context, listen: true).list.length + 1,
-              itemBuilder: (context, idx) => getItem(context, idx+1)),
+              itemCount: Provider.of<ItemListProvider>(context, listen: true)
+                  .list
+                  .length,
+              itemBuilder: (context, idx) => getItem(context, idx)),
         ),
       ],
     );
+  }
+
+  SelectedItemList() {
+    if (widget.selectedItems.isNotEmpty) {
+      return SizedBox(
+        height: _size.height / 2.4,
+        child: ReorderableList(
+            shrinkWrap: true,
+            itemBuilder: (context, idx) =>
+                getSelectedItem(widget.selectedItems[idx], idx),
+            itemCount: widget.selectedItems.length,
+            onReorder: (prev, current) {
+              setState(() {
+                if (current > prev) {
+                  current = current - 1;
+                }
+                final item = widget.selectedItems.removeAt(prev);
+                widget.selectedItems.insert(current, item);
+              });
+            }),
+      );
+    } else {
+      return Center(child: Text('לא נבחרו מוצרים'));
+    }
   }
 
   getItem(context, idx) {
@@ -181,14 +255,27 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: (idx == 0) ? HeadersInfo() : ItemInfo(0),//idx - 1),
+            child: (idx == -1) ? HeadersInfo() : ItemInfo(idx),
+          ),
+        ));
+  }
+
+  getSelectedItem(item, idx) {
+    return Card(
+        key: ValueKey(item.id),
+        margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
+        elevation: 3,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: SelectedItemInfo(item, idx),
           ),
         ));
   }
 
   HeadersInfo() {
     return Row(children: [
-      SizedBox(width: _size.width / 80),
+      SizedBox(width: _size.width / 30),
       ExpandedSizedTextBox('שם'),
       ExpandedSizedTextBox('כתובת'),
       InkWell(
@@ -241,14 +328,23 @@ class _MyHomePageState extends State<MyHomePage> {
               )),
         ));
       } else if (value.runtimeType == bool) {
-        textBoxes.add(Switch(
-            value: Provider.of<ItemListProvider>(context, listen: true)
-                .list[index]
-                .item1,
-            onChanged: (value) {
-              Provider.of<ItemListProvider>(context, listen: false)
-                  .SelectItemAt(index);
-            }));
+        textBoxes.add(Builder(builder: (newContext) {
+          return Switch(
+              value: Provider.of<ItemListProvider>(context, listen: true)
+                  .list[index]
+                  .item1,
+              onChanged: (value) {
+                Provider.of<ItemListProvider>(newContext, listen: false)
+                    .SelectItemAt(index);
+                setState(() {
+                  if (value) {
+                    widget.selectedItems.add(item);
+                  } else {
+                    widget.selectedItems.remove(item);
+                  }
+                });
+              });
+        }));
       } else {
         textBoxes.add(Expanded(
           child: SizedBox(
@@ -271,6 +367,81 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
     return Row(children: textBoxes);
+  }
+
+  SelectedItemInfo(Item item, idx) {
+    Map info = {
+      -1: "",
+      0: item.name,
+      1: item.address,
+      2: item.neighborhood,
+      3: item.city,
+      4: item.phone,
+      5: item.description,
+      6: item.category,
+      7: item.date,
+      8: item.comments,
+    };
+    List<Widget> textBoxes = [];
+    info.forEach((key, value) {
+      if (key == -1) {
+        textBoxes.add(ReorderableDragStartListener(
+            index: idx, child: const Icon(Icons.drag_handle)));
+      } else if (value.runtimeType == DateTime) {
+        textBoxes.add(Expanded(
+          child: SizedBox(
+              width: _size.width / 12,
+              height: _size.height / 20,
+              child: Center(
+                child: Text(
+                  formatDate(value),
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                ),
+              )),
+        ));
+      } else {
+        textBoxes.add(Expanded(
+          child: SizedBox(
+              width: _size.width / 12,
+              height: _size.height / 20,
+              child: Center(
+                child: Tooltip(
+                  textStyle: TextStyle(fontSize: 14),
+                  decoration:
+                      BoxDecoration(color: Color.fromARGB(255, 200, 200, 200)),
+                  message: value,
+                  child: Text(
+                    value,
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
+                  ),
+                ),
+              )),
+        ));
+      }
+    });
+    return Directionality(
+        textDirection: TextDirection.rtl, child: Row(children: textBoxes));
+  }
+
+  MyMap() {
+    return SizedBox(
+        height: _size.height,
+        width: _size.width / 3,
+        child: Stack(
+          children: [
+            map,
+            Center(
+                child: Card(
+                  elevation: 10,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                    child: Text("to be implemented", style: TextStyle(fontSize: 20)),
+                  ),
+                ))
+          ],
+        ));
   }
 
   ExpandedSizedTextBox(text) {
@@ -309,5 +480,9 @@ class _MyHomePageState extends State<MyHomePage> {
         date.month.toString() +
         '/' +
         date.year.toString();
+  }
+
+  SendRoute() {
+    //todo: open dialog to add pickup times and upload to DB
   }
 }
