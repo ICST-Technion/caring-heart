@@ -1,31 +1,124 @@
+// ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'item.dart';
+import 'item_service.dart' as DB;
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(App());
+}
+
+class App extends StatelessWidget {
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp(
+    options: FirebaseOptions(
+        apiKey: "AIzaSyAthHM9OIfBl2ZGEQXpLNNReIlscA0DDzY",
+        authDomain: "caring-heart-aa1c1.firebaseapp.com",
+        projectId: "caring-heart-aa1c1",
+        storageBucket: "caring-heart-aa1c1.appspot.com",
+        messagingSenderId: "182054728263",
+        appId: "1:182054728263:web:148c0f7de618b0bfc07762",
+        measurementId: "G-L7KXZNNTP3"),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: _initialization,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return ErrorScreen(snapshot.error.toString());
+        }
+        if (snapshot.connectionState == ConnectionState.done) {
+          return MyApp();
+        }
+        return Center(child: InitScreen());
+      },
+    );
+  }
+
+  Widget InitScreen() {
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            CircularProgressIndicator(),
+            Text(
+              "מתחבר לשרת...",
+              textDirection: TextDirection.rtl,
+            )
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Widget ErrorScreen(String error) {
+    return MaterialApp(
+        home: Scaffold(
+            body:
+                Center(child: Text(error, textDirection: TextDirection.ltr))));
+  }
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key);
+
+  final Future<List<Item>> _itemList = DB.ItemService().getItems();
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: _itemList,
+        builder: (context, AsyncSnapshot<List<Item>> snapshot) {
+          if (snapshot.hasError) {
+            return ErrorScreen(snapshot.error.toString());
+          }
+          if (snapshot.connectionState == ConnectionState.done) {
+            return MaterialApp(
+              title: 'מסלול יומי',
+              theme: ThemeData(
+                primarySwatch: Colors.pink,
+              ),
+              debugShowCheckedModeBanner: false,
+              home: MyHomePage(title: 'מסלול יומי', itemList: snapshot.data!),
+            );
+          }
+          return LoadingDataScreen();
+        });
+  }
+
+  Widget LoadingDataScreen() {
     return MaterialApp(
-      title: 'מסלול יומי',
-      theme: ThemeData(
-        primarySwatch: Colors.pink,
-      ),
-      debugShowCheckedModeBanner: false,
-      home: const MyHomePage(title: 'מסלול יומי'),
-    );
+        home: Scaffold(
+            body: Center(
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        CircularProgressIndicator(),
+        Text(
+          "טוען נתונים...",
+          textDirection: TextDirection.rtl,
+        )
+      ]),
+    )));
+  }
+
+  Widget ErrorScreen(String error) {
+    return MaterialApp(
+        home: Scaffold(
+            body:
+                Center(child: Text(error, textDirection: TextDirection.ltr))));
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+  const MyHomePage({Key? key, required this.title, required this.itemList})
+      : super(key: key);
 
   final String title;
+  final List<Item> itemList;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -34,36 +127,36 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    final testList = [
+    /*final testList = [
       {
         'address': 'ויצמן 17, חיפה',
         'name': 'משה סלומון',
-        'description': 'כסא',
+        'category': 'כסא',
         'phone': '0529981374',
         'time': '08:00'
       },
       {
         'address': 'שולמן 3, זכרון יעקב',
         'name': 'שמעון חדד',
-        'description': 'סלון + מכונת כביסה',
+        'category': 'סלון + מכונת כביסה',
         'phone': '0574498643',
         'time': '09:00'
       },
       {
         'address': 'בן יהודה 33, חיפה',
         'name': 'יעקב בר',
-        'description': 'מיטה + מזרון',
+        'category': 'מיטה + מזרון',
         'phone': '0504442213',
         'time': '10:00'
       }
-    ];
+    ];*/
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body: Center(child: itemList(testList)),
+        body: Center(child: ItemList(widget.itemList)),
         bottomNavigationBar: BottomNavBar(),
       ),
     );
@@ -74,18 +167,16 @@ class _MyHomePageState extends State<MyHomePage> {
       currentIndex: 0, // this will be set when a new tab is tapped
       items: [
         BottomNavigationBarItem(
-          icon: new Icon(Icons.calendar_today_outlined),
-          label: 'מסלול יומי'
-        ),
+            icon: Icon(Icons.calendar_today_outlined), label: 'מסלול יומי'),
         BottomNavigationBarItem(
-          icon: new Icon(Icons.calendar_view_week),
-          label: 'מסלולים שבועיים'
-        )
+            icon: Icon(Icons.calendar_view_week), label: 'מסלולים שבועיים'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.more_horiz), label: 'פריטים שנאספו')
       ],
     );
   }
 
-  itemList(dynamic items) {
+  ItemList(List<Item> items) {
     return ListView.builder(
       itemCount: items.length,
       itemBuilder: (context, int index) {
@@ -97,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  TopItem(item) {
+  TopItem(Item item) {
     return Card(
         margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         elevation: 4,
@@ -106,17 +197,17 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Padding(
                 padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: ItemStuff(item),
               ),
-              Divider(height: 1),
+              const Divider(height: 1),
               AcceptOrReject(item)
             ],
           ),
         ));
   }
 
-  ListItem(item) {
+  ListItem(Item item) {
     return Card(
         margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         elevation: 4,
@@ -128,18 +219,18 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  Row ItemStuff(item) {
-    final description = item['description'];
+  Row ItemStuff(Item item) {
+    final category = item.category;
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       pickupInfo(item),
-      Text(description, style: const TextStyle(fontSize: 18)),
+      Text(category, style: const TextStyle(fontSize: 18)),
       itemButtons(item)
     ]);
   }
 
-  pickupInfo(item) {
-    final address = item['address'];
-    final time = item['time'];
+  pickupInfo(Item item) {
+    final address = item.address;
+    final time = item.pickupTime;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
@@ -154,9 +245,9 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  itemButtons(item) {
-    final phone = item['phone'];
-    final address = item['address'];
+  itemButtons(Item item) {
+    final phone = item.phone;
+    final address = item.address;
     return Column(
       children: [
         IconButton(
@@ -171,7 +262,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  AcceptOrReject(item) {
+  AcceptOrReject(Item item) {
     return IntrinsicHeight(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -205,11 +296,11 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  AcceptItem(item) {
+  AcceptItem(Item item) {
     //todo: backend
   }
 
-  RejectItem(item) {
+  RejectItem(Item item) {
     //todo: backend
   }
 }

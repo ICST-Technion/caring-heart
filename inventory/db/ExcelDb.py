@@ -3,7 +3,7 @@ from openpyxl.utils.cell import column_index_from_string as _col_idx
 import operator
 from extensions.MSingleton import Singleton
 from extensions.MCExtensions import with_metaclass
-from inventory.db.sheetname_getter import sheetname_getter
+from inventory.db.DateTimeHelper import sheetname_getter
 from inventory.interfaces.IDb import IDb
 from itertools import islice
 from configparser import ConfigParser
@@ -39,8 +39,8 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
                  workbook_loader=None,
                  **kwargs):
         if columns is None:
-            columns = {"name": 'A', "address": 'B', "street": 'C', "city": 'D', "phone": 'E', "description": 'F',
-                       "category": 'G', "date": 'H', "comments": 'I', "email": 'J'}
+            columns = {"שם": 'A', "כתובת": 'B', "שכונה": 'C', "עיר": 'D', "נייד/טל'": 'E', "תאור": 'F',
+                       "קטגוריית מוצר": 'G', "תאריך": 'H', "הערות": 'I', "E-mail": 'J'}
         if workbook_loader is None:
             workbook_loader = lambda: load_workbook(filename=self._filename)
         self._workbook_loader = workbook_loader
@@ -52,13 +52,16 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
 
     def connect(self, *args, **kwargs):
         self._wb = self._workbook_loader()
-        self._sht = self._wb[self._sheetname_getter(self._wb.sheetnames)]
+        sheet_name = self._sheetname_getter(self._wb.sheetnames)
+        if sheet_name not in self._wb:
+            self._create_new_sheet(sheet_name)
+        self._sht = self._wb[sheet_name]
 
     def close(self):
         self._sht = None
         self._wb.close()
 
-    def insert(self, *args, sync=True, **kwargs):
+    def insert(self, sync=True, *args, **kwargs):
         item = {self._columns[key]: value for key, value in kwargs.get("item").items()}
         with self:
             self._sht.append(item)
@@ -109,6 +112,11 @@ class ExcelDb(IDb, metaclass=with_metaclass(IDb.__class__, Singleton)):
                 rows = rows[:kwargs['limit']]
             res = [{name: row[col_idx(col)] for name, col in self._columns.items()} for row in rows]
         return res
+
+    def _create_new_sheet(self,name):
+        sheet = self._wb.create_sheet(name)
+        sheet.sheet_view.rightToLeft = True
+        sheet.append({value : key for key, value in self._columns.items()})
 
     def __enter__(self):
         self.connect()
