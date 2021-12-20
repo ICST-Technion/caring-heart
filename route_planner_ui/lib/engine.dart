@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:tuple/tuple.dart';
+import "package:tuple/tuple.dart";
+import 'package:google_maps/google_maps.dart';
 
 class logic{
 
@@ -32,7 +33,7 @@ class logic{
     return distanceMatrix;
   }
 
-  List<int> FindKClosestNodes(List<double> distancesArray, int k) {
+  static List<int> _findKClosestNodes(List<double> distancesArray, int k) {
     // TODO: exceptions
 
     assert(distancesArray.every((element) => element >= 0));
@@ -63,7 +64,7 @@ class logic{
 
   /// Returns the maximal distance between two points in cluster.
   /// Acts as a metric that defines cluster's size
-  double _computeClusterDistanceFactor(
+  static double _computeClusterDistanceFactor(
       List<int> indexes, List<List<double>> graph) {
     double maxDistance = 0;
     // Iterate through every set of two points in indexes.
@@ -78,13 +79,13 @@ class logic{
 
   /// Finds the cluster smallest distance factor by area on a map.
   /// size Is defined in this function by ComputeClusterDistance function.
-  static List<int> __findMinCluster(List<List<double>> graph, int k) {
+  static List<int> _findMinCluster(List<List<double>> graph, int k) {
     // Initiate min value
     double minSize = double.maxFinite;
     List<int> minCluster = [];
     for (int i = 0; i < graph.length; i++) {
       // Find the k closest nodes to current node graph[i]. This is a cluster.
-      List<int> kClosestNodes = FindKClosestNodes(graph[i], k);
+      List<int> kClosestNodes = _findKClosestNodes(graph[i], k);
 
       //Find the size of current cluster.
       double clusterDistanceFactor =
@@ -98,6 +99,8 @@ class logic{
     }
     return minCluster;
   }
+
+  static google
 }
 
 
