@@ -4,9 +4,8 @@ import 'package:tuple/tuple.dart';
 
 class ItemListProvider with ChangeNotifier {
   List<Tuple2<bool, Item>> list;
-  List<Item> selectedList;
 
-  ItemListProvider({required this.list, this.selectedList = const []});
+  ItemListProvider({required this.list});
 
   void Sort(sortFunc, bool isAscending) {
     isAscending
@@ -18,11 +17,9 @@ class ItemListProvider with ChangeNotifier {
   void SelectItemAt(int index) {
     list[index] = list[index].withItem1(!list[index].item1);
     notifyListeners();
-    if (list[index].item1) {
-      selectedList.add(list[index].item2);
-    } else {
-      selectedList.remove(list[index].item2);
-    }
-    notifyListeners();
+  }
+
+  bool isSelectedEmpty() {
+    return list.any((element) => element.item1);
   }
 }
