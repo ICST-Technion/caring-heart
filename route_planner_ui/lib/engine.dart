@@ -1,15 +1,17 @@
 import 'dart:convert';
+import 'dart:core';
 import 'dart:math';
 import "package:tuple/tuple.dart";
 import 'package:google_maps/google_maps.dart';
 
-class logic{
+class Logic{
 
-  static List<Point<double>> routePlanningEngine(List<Point<double>> map, int k) {
+ 
+
+  static List<MyPoint> routePlanningEngine(List<MyPoint> map, int k) {
     int pointsAmount = map.length;
-
     // Compute a distance matrix. This defines a graph in which each edge's value is the distance between the nodes.
-    List<List<double>> distanceMatrix = ComputeDistanceMatrix(pointsAmount, map);
+    List<List<double>> distanceMatrix = _computeDistanceMatrix(pointsAmount, map);
 
     // From current graph, find k nodes that the maximal distance between them is minimal.
     var routePointsIndexes = _findMinCluster(distanceMatrix, k);
@@ -17,12 +19,12 @@ class logic{
 
 
     var routePoints =
-    List<Point<double>>.generate(k, (i) => map[routePointsIndexes[i]]);
+    List<MyPoint>.generate(k, (i) => map[routePointsIndexes[i]]);
 
     return routePoints;
   }
 
-  static List<List<double>> ComputeDistanceMatrix(int pointsAmount, List<Point<double>> map) {
+  static List<List<double>> _computeDistanceMatrix(int pointsAmount, List<MyPoint> map) {
     List<List<double>> distanceMatrix = List<List<double>>.generate(map.length, (i) => List<double>.filled(map.length, 0));
     for (int i = 0; i < pointsAmount; i++) {
       for (int j = 0; j < pointsAmount; j++) {
@@ -58,7 +60,7 @@ class logic{
     List<int> sortedIndexes =
     enumeratedArray.map((pair) => (pair.item1)).toList();
 
-    //Return the k closest nodes to origin (indcludes origin)
+    //Return the k closest nodes to origin (includes origin)
     return sortedIndexes.sublist(0, k);
   }
 
@@ -99,10 +101,32 @@ class logic{
     }
     return minCluster;
   }
-
-  static google
 }
 
+class MyPoint{
+  double _x;
+  double _y;
+
+
+  MyPoint(this._x, this._y);
+
+  double get x => _x;
+  double get y => _y;
+
+  set y(double value) {
+    _y = value;
+  }
+  set x(double value) {
+    _x = value;
+  }
+
+  double distanceTo(MyPoint other){
+    return sqrt(pow(_x - other.x, 2) + pow(_y - other.y, 2)).toDouble();
+  }
+
+
+
+}
 
 
 
