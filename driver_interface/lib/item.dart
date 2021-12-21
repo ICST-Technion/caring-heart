@@ -42,6 +42,6 @@ class Item {
         isCollected: json['isCollected'],
         name: json['name'],
         pickupTime: time,
-        phone: json['phone']);
+        phone: json['phone'].toString());
   }
 }

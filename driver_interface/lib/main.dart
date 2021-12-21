@@ -269,7 +269,9 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           Expanded(
             child: TextButton(
-                onPressed: () => AcceptItem(item),
+                onPressed: () async {
+                  await AcceptItem(item);
+                },
                 child: const Text(
                   'אישור',
                   style: TextStyle(color: Colors.green, fontSize: 18),
@@ -296,11 +298,17 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  AcceptItem(Item item) {
-    //todo: backend
+  AcceptItem(Item item) async {
+    await DB.ItemService().collectItem(item.id);
+    setState(() {
+      widget.itemList.remove(item);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('האיסוף הושלם'), duration: Duration(milliseconds: 1200),));
   }
 
   RejectItem(Item item) {
-    //todo: backend
+    setState(() {
+      widget.itemList.remove(item);
+    });
   }
 }
