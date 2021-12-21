@@ -138,12 +138,13 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+enum RouteDialogStatus { success, noPickupTime, badDate, badTimes }
+
 class _MyHomePageState extends State<MyHomePage> {
   bool _isAscending = true;
   IFrameElement mapElement = IFrameElement();
   Widget map = Container();
   DateTime selectedDate = DateTime.now();
-
   TextEditingController ctrl = new TextEditingController();
 
   @override
@@ -456,7 +457,7 @@ class _MyHomePageState extends State<MyHomePage> {
             map,
             PointerInterceptor(
                 child: Container(color: Colors.black.withOpacity(0))),
-            Center(
+            /*Center(
                 child: Card(
               elevation: 10,
               child: Container(
@@ -464,7 +465,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child:
                     Text("to be implemented", style: TextStyle(fontSize: 20)),
               ),
-            ))
+            ))*/
           ],
         ),
       ),
@@ -517,13 +518,9 @@ class _MyHomePageState extends State<MyHomePage> {
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
-              contentPadding: EdgeInsets.symmetric(vertical: 10),
-              content: SizedBox(
-                  width: ScreenSize(context).width / 100,
-                  height: ScreenSize(context).height / 30,
-                  child: Center(
-                      child: Text('לא בחרת מוצרים',
-                          style: TextStyle(color: Colors.red))))));
+              title: Text('לא בחרת מוצרים',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.red))));
     } else {
       showDialog(
           context: context,
@@ -554,7 +551,8 @@ class _MyHomePageState extends State<MyHomePage> {
     for (int h = 8; h <= 18; h++) {
       for (int m = 0; m < 60; m += 15) {
         String minutes = m == 0 ? '00' : m.toString();
-        options.add('$h:' + minutes);
+        String hours = (h / 10 == 0) ? '0' + h.toString() : h.toString();
+        options.add('$hours:$minutes');
       }
     }
     return Container(
@@ -582,11 +580,37 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   SubmitBtn() {
-    return IconButton(
-        onPressed: () {
-          SendRoute();
+    return FloatingActionButton(
+        onPressed: () async {
+          final status = await SendRoute();
+          if (status == RouteDialogStatus.success) {
+            Navigator.of(context).pop();
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text('המסלול הועלה לשרת!')));
+          } else if (status == RouteDialogStatus.noPickupTime) {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                    title: Text('יש לבחור שעת איסוף לכל המוצרים',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.red))));
+          } else if (status == RouteDialogStatus.badDate) {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                    title: Text('התאריך שנבחר אינו חוקי',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.red))));
+          } else {
+            showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                    title: Text('סדר השעות שנבחרו אינו חוקי',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.red))));
+          }
         },
-        icon: Icon(Icons.send, color: Colors.pinkAccent));
+        child: Icon(Icons.send));
   }
 
   DateBtn() {
@@ -597,6 +621,7 @@ class _MyHomePageState extends State<MyHomePage> {
             height: ScreenSize(context).height / 21,
             width: ScreenSize(context).width / 15,
             child: TextFormField(
+                readOnly: true,
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(border: OutlineInputBorder()),
                 controller: ctrl,
@@ -618,5 +643,35 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void SendRoute() {}
+  Future<RouteDialogStatus> SendRoute() async {
+    if (widget.selectedItems.any((element) => element.item2 == '')) {
+      return RouteDialogStatus.noPickupTime;
+    } else if (compareDates(selectedDate, DateTime.now()) < 0) {
+      return RouteDialogStatus.badDate;
+    } else if (!areTimesLegal(widget.selectedItems)) {
+      return RouteDialogStatus.badTimes;
+    }
+    await DB.ItemService()
+        .addRouteByItemList(widget.selectedItems, selectedDate);
+    return RouteDialogStatus.success;
+  }
+
+  compareDates(DateTime d1, DateTime d2) {
+    if (d1.compareTo(d2) == 0 ||
+        (d1.year == d2.year && d1.month == d2.month && d1.day == d2.day)) {
+      return 0;
+    }
+    return d1.compareTo(d2);
+  }
+
+  bool areTimesLegal(List<Tuple2<Item, String>> list) {
+    for (int i = 0; i < list.length - 1; i++) {
+      String t1 = list[i].item2, t2 = list[i + 1].item2;
+      if (int.parse(t1.split(':')[0]) > int.parse(t2.split(':')[0]) ||
+          int.parse(t1.split(':')[1]) > int.parse(t2.split(':')[1])) {
+        return false;
+      }
+    }
+    return true;
+  }
 }
