@@ -371,7 +371,8 @@ class _MyHomePageState extends State<MyHomePage> {
               if (value) {
                 widget.selectedItems.add(Tuple2(item, ""));
               } else {
-                widget.selectedItems.remove(Tuple2(item, ""));
+
+                widget.selectedItems.removeWhere((element) => element.item1 == item);
               }
             });
           });
@@ -555,7 +556,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Text(time),
           );
         }).toList(),
-        hint: Text('בחירת שעה'),
+        hint: Text('בחירת שעה', style: TextStyle(color: Colors.pinkAccent)),
         onChanged: (String? value) {
           setState(() {
               widget.selectedItems[idx] =
