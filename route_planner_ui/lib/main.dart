@@ -1,10 +1,12 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'dart:async';
 import 'dart:html';
 import 'dart:ui' as ui;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
 import 'package:tuple/tuple.dart';
 import 'item_service.dart' as DB;
@@ -129,7 +131,7 @@ class MyHomePage extends StatefulWidget {
 
   final String title;
   final List<Item> itemList;
-  List<Item> selectedItems = [];
+  List<Tuple2<Item, String>> selectedItems = [];
   String currentMapSrc = '';
 
   @override
@@ -138,18 +140,18 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   bool _isAscending = true;
-  Size _size = Size(1920, 1080);
   IFrameElement mapElement = IFrameElement();
   Widget map = Container();
-  String apiKey = 'AIzaSyDQG8XUHA4I-7uSMU6Ph9rVSd9P2hsn-Sw';
 
   @override
   void initState() {
     widget.currentMapSrc = 'https://maps.openrouteservice.org/';
     mapElement.src = widget.currentMapSrc;
     mapElement.style.border = 'none';
-    mapElement.width = _size.width.toString();
-    mapElement.height = (_size.height / 2).toString();
+    mapElement.width = '1920';
+    mapElement.height = '1080';
+    mapElement.blur();
+    mapElement.requestPointerLock();
     // ignore: undefined_prefixed_name
     ui.platformViewRegistry.registerViewFactory(
       'iframeElement',
@@ -163,9 +165,12 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
+  Size ScreenSize(context) {
+    return MediaQuery.of(context).size;
+  }
+
   @override
   Widget build(BuildContext context) {
-    _size = MediaQuery.of(context).size;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -182,10 +187,15 @@ class _MyHomePageState extends State<MyHomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         SizedBox(
-          width: _size.width / 1.5,
-          height: _size.height,
+          width: ScreenSize(context).width / 1.5,
+          height: ScreenSize(context).height,
           child: Scaffold(
-            floatingActionButton: FloatingActionButton(tooltip: 'שליחה', child: Icon(Icons.send), onPressed: ()=>SendRoute(),),
+            floatingActionButton: FloatingActionButton(
+                tooltip: 'שליחה',
+                child: Icon(Icons.send),
+                onPressed: () {
+                  ShowRouteDialog();
+                }),
             body: SingleChildScrollView(
               child: Column(children: [
                 ItemList(),
@@ -195,7 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: TextStyle(fontSize: 20),
                 ),
                 Divider(thickness: 2),
-                SelectedItemList()
+                SelectedItemList(true)
               ]),
             ),
           ),
@@ -212,7 +222,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: getItem(context, -1), margin: EdgeInsets.only(top: 10)),
         Container(
           margin: EdgeInsets.only(top: 10),
-          height: _size.height / 2.6,
+          height: ScreenSize(context).height / 2.6,
           child: ListView.builder(
               shrinkWrap: true,
               itemCount: Provider.of<ItemListProvider>(context, listen: true)
@@ -224,14 +234,14 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  SelectedItemList() {
+  SelectedItemList(bool draggable) {
     if (widget.selectedItems.isNotEmpty) {
       return SizedBox(
-        height: _size.height / 2.4,
+        height: ScreenSize(context).height / 2.4,
         child: ReorderableList(
             shrinkWrap: true,
-            itemBuilder: (context, idx) =>
-                getSelectedItem(widget.selectedItems[idx], idx),
+            itemBuilder: (context, idx) => getSelectedItem(
+                widget.selectedItems[idx].item1, idx, draggable),
             itemCount: widget.selectedItems.length,
             onReorder: (prev, current) {
               setState(() {
@@ -244,7 +254,11 @@ class _MyHomePageState extends State<MyHomePage> {
             }),
       );
     } else {
-      return Center(child: Text('לא נבחרו מוצרים'));
+      return Center(
+          child: Text(
+        'לא נבחרו מוצרים',
+        style: TextStyle(fontSize: 15),
+      ));
     }
   }
 
@@ -260,7 +274,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  getSelectedItem(item, idx) {
+  getSelectedItem(Item item, int idx, bool draggable) {
     return Card(
         key: ValueKey(item.id),
         margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
@@ -268,14 +282,14 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: SelectedItemInfo(item, idx),
+            child: SelectedItemInfo(item, idx, draggable),
           ),
         ));
   }
 
   HeadersInfo() {
     return Row(children: [
-      SizedBox(width: _size.width / 30),
+      SizedBox(width: ScreenSize(context).width / 30),
       ExpandedSizedTextBox('שם'),
       ExpandedSizedTextBox('כתובת'),
       InkWell(
@@ -299,9 +313,6 @@ class _MyHomePageState extends State<MyHomePage> {
     Item item =
         Provider.of<ItemListProvider>(context, listen: true).list[index].item2;
     Map info = {
-      'select': Provider.of<ItemListProvider>(context, listen: true)
-          .list[index]
-          .item1,
       0: item.name,
       1: item.address,
       2: item.neighborhood,
@@ -317,8 +328,8 @@ class _MyHomePageState extends State<MyHomePage> {
       if (value.runtimeType == DateTime) {
         textBoxes.add(Expanded(
           child: SizedBox(
-              width: _size.width / 12,
-              height: _size.height / 20,
+              width: ScreenSize(context).width / 12,
+              height: ScreenSize(context).height / 20,
               child: Center(
                 child: Text(
                   formatDate(value),
@@ -327,29 +338,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               )),
         ));
-      } else if (value.runtimeType == bool) {
-        textBoxes.add(Builder(builder: (newContext) {
-          return Switch(
-              value: Provider.of<ItemListProvider>(context, listen: true)
-                  .list[index]
-                  .item1,
-              onChanged: (value) {
-                Provider.of<ItemListProvider>(newContext, listen: false)
-                    .SelectItemAt(index);
-                setState(() {
-                  if (value) {
-                    widget.selectedItems.add(item);
-                  } else {
-                    widget.selectedItems.remove(item);
-                  }
-                });
-              });
-        }));
       } else {
         textBoxes.add(Expanded(
           child: SizedBox(
-              width: _size.width / 12,
-              height: _size.height / 20,
+              width: ScreenSize(context).width / 12,
+              height: ScreenSize(context).height / 20,
               child: Center(
                 child: Tooltip(
                   textStyle: TextStyle(fontSize: 14),
@@ -366,10 +359,27 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
       }
     });
+    textBoxes.insert(0, Builder(builder: (newContext) {
+      return Switch(
+          value: Provider.of<ItemListProvider>(context, listen: true)
+              .list[index]
+              .item1,
+          onChanged: (value) {
+            Provider.of<ItemListProvider>(newContext, listen: false)
+                .SelectItemAt(index);
+            setState(() {
+              if (value) {
+                widget.selectedItems.add(Tuple2(item, ""));
+              } else {
+                widget.selectedItems.remove(Tuple2(item, ""));
+              }
+            });
+          });
+    }));
     return Row(children: textBoxes);
   }
 
-  SelectedItemInfo(Item item, idx) {
+  SelectedItemInfo(Item item, idx, bool draggable) {
     Map info = {
       -1: "",
       0: item.name,
@@ -384,14 +394,11 @@ class _MyHomePageState extends State<MyHomePage> {
     };
     List<Widget> textBoxes = [];
     info.forEach((key, value) {
-      if (key == -1) {
-        textBoxes.add(ReorderableDragStartListener(
-            index: idx, child: const Icon(Icons.drag_handle)));
-      } else if (value.runtimeType == DateTime) {
+      if (value.runtimeType == DateTime) {
         textBoxes.add(Expanded(
           child: SizedBox(
-              width: _size.width / 12,
-              height: _size.height / 20,
+              width: ScreenSize(context).width / 12,
+              height: ScreenSize(context).height / 20,
               child: Center(
                 child: Text(
                   formatDate(value),
@@ -403,8 +410,8 @@ class _MyHomePageState extends State<MyHomePage> {
       } else {
         textBoxes.add(Expanded(
           child: SizedBox(
-              width: _size.width / 12,
-              height: _size.height / 20,
+              width: ScreenSize(context).width / 12,
+              height: ScreenSize(context).height / 20,
               child: Center(
                 child: Tooltip(
                   textStyle: TextStyle(fontSize: 14),
@@ -421,39 +428,56 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
       }
     });
+    if (draggable) {
+      textBoxes.insert(
+          0,
+          ReorderableDragStartListener(
+              index: idx, child: const Icon(Icons.drag_handle)));
+    } else {
+      textBoxes.insert(0, SelectTimeBtn(idx));
+    }
     return Directionality(
         textDirection: TextDirection.rtl, child: Row(children: textBoxes));
   }
 
   MyMap() {
-    return SizedBox(
-        height: _size.height,
-        width: _size.width / 3,
+    return Expanded(
+      child: SizedBox(
+        height: ScreenSize(context).height,
+        width: ScreenSize(context).width / 3,
         child: Stack(
           children: [
             map,
+            PointerInterceptor(
+                child: Container(color: Colors.black.withOpacity(0))),
             Center(
                 child: Card(
-                  elevation: 10,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                    child: Text("to be implemented", style: TextStyle(fontSize: 20)),
-                  ),
-                ))
+              elevation: 10,
+              child: Container(
+                padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                child:
+                    Text("to be implemented", style: TextStyle(fontSize: 20)),
+              ),
+            ))
           ],
-        ));
+        ),
+      ),
+    );
   }
 
   ExpandedSizedTextBox(text) {
-    return Expanded(
-        child: SizedBox(
-            width: _size.width / 12,
-            height: _size.height / 20,
-            child: Center(
-                child: Text(
-              text,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ))));
+    return Flexible(child: SizedTextBox(text));
+  }
+
+  SizedTextBox(text) {
+    return SizedBox(
+        width: ScreenSize(context).width / 12,
+        height: ScreenSize(context).height / 20,
+        child: Center(
+            child: Text(
+          text,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        )));
   }
 
   sortColumn(sort) {
@@ -482,7 +506,61 @@ class _MyHomePageState extends State<MyHomePage> {
         date.year.toString();
   }
 
-  SendRoute() {
-    //todo: open dialog to add pickup times and upload to DB
+  ShowRouteDialog() {
+    if (widget.selectedItems.isEmpty) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+              contentPadding: EdgeInsets.symmetric(vertical: 10),
+              content: SizedBox(
+                  width: ScreenSize(context).width / 100,
+                  height: ScreenSize(context).height / 30,
+                  child: Center(
+                      child: Text('לא בחרת מוצרים',
+                          style: TextStyle(color: Colors.red))))));
+    } else {
+      showDialog(
+          context: context,
+          builder: (_) => Directionality(
+                textDirection: TextDirection.rtl,
+                child: Dialog(child: RouteDialogContent()),
+              ));
+    }
+  }
+
+  RouteDialogContent() {
+    return Column(
+      children: [
+        /*Container(
+            child: getItem(context, -1), margin: EdgeInsets.only(bottom: 10)),*/
+        SelectedItemList(false)
+      ],
+    );
+  }
+
+  SelectTimeBtn(int idx) {
+    List<String> options = [];
+    String time = widget.selectedItems[idx].item2;
+    for (int h = 8; h <= 18; h++) {
+      for (int m = 0; m < 60; m += 15) {
+        String minutes = m == 0 ? '00' : m.toString();
+        options.add('$h:' + minutes);
+      }
+    }
+    return DropdownButton(
+        value: time.isEmpty ? null : time,
+        items: options.map((String time) {
+          return DropdownMenuItem<String>(
+            value: time,
+            child: Text(time),
+          );
+        }).toList(),
+        hint: Text('בחירת שעה'),
+        onChanged: (String? value) {
+          setState(() {
+              widget.selectedItems[idx] =
+                  widget.selectedItems[idx].withItem2(value!);
+          });
+        });
   }
 }

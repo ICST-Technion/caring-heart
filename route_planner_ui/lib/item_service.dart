@@ -7,7 +7,7 @@ class ItemService {
   Future<List<Item>> getCheckedItems() async {
     final ref = FirebaseFirestore.instance.collection('inventoryTest');
     return ref
-        .where('isChecked', isEqualTo: true)
+        .where('isCollected', isEqualTo: false)
         .get()
         .then((res) => createItemListFromInventory(res.docs));
   }
@@ -16,7 +16,9 @@ class ItemService {
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
     List<Item> items = [];
     for (var doc in docs) {
-      items.add(Item.fromJson(doc.id, doc.data()));
+      if (doc.data()['isChecked']) {
+        items.add(Item.fromJson(doc.id, doc.data()));
+      }
     }
     return items;
   }

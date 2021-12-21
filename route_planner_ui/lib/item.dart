@@ -41,6 +41,6 @@ class Item {
         isChecked: json['isChecked'],
         isCollected: json['isCollected'],
         name: json['name'],
-        phone: json['phone']);
+        phone: json['phone'].toString());
   }
 }
