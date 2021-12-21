@@ -31,10 +31,10 @@ class Engine{
 
   static Future<List<Item>> routePlanningEngine(List<Item> items, int k) async{
     int pointsAmount = items.length;
-    var cooridinates = [for (final item in items) await coordinatesOfAddress(item.address)];
+    var coordinates = [for (final item in items) await coordinatesOfAddress(item.address)];
 
     // Compute a distance matrix. This defines a graph in which each edge's value is the distance between the nodes.
-    List<List<double>> distanceMatrix = _computeDistanceMatrix(pointsAmount, cooridinates);
+    List<List<double>> distanceMatrix = _computeDistanceMatrix(pointsAmount, coordinates);
 
     // From current graph, find k nodes that the maximal distance between them is minimal.
     var routePointsIndexes = _findMinCluster(distanceMatrix, k);
@@ -42,7 +42,6 @@ class Engine{
 
     if (routePointsIndexes.isEmpty){
       return [];
-
     }
     var routePoints =
     List<Item>.generate(k, (i) => items[routePointsIndexes[i]]);
