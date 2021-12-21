@@ -1,11 +1,13 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'item_service.dart' as DB;
 import 'item.dart';
 
 void main() {
+
   WidgetsFlutterBinding.ensureInitialized();
   runApp(App());
 }
