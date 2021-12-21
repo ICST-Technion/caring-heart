@@ -142,9 +142,14 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isAscending = true;
   IFrameElement mapElement = IFrameElement();
   Widget map = Container();
+  DateTime selectedDate = DateTime.now();
+
+  TextEditingController ctrl = new TextEditingController();
 
   @override
   void initState() {
+    ctrl.text = formatDate(DateTime.now());
+
     widget.currentMapSrc = 'https://maps.openrouteservice.org/';
     mapElement.src = widget.currentMapSrc;
     mapElement.style.border = 'none';
@@ -371,8 +376,8 @@ class _MyHomePageState extends State<MyHomePage> {
               if (value) {
                 widget.selectedItems.add(Tuple2(item, ""));
               } else {
-
-                widget.selectedItems.removeWhere((element) => element.item1 == item);
+                widget.selectedItems
+                    .removeWhere((element) => element.item1 == item);
               }
             });
           });
@@ -531,12 +536,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   RouteDialogContent() {
     return Column(
-      children: [
-        /*Container(
-            child: getItem(context, -1), margin: EdgeInsets.only(bottom: 10)),*/
-        SelectedItemList(false)
-      ],
-    );
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SelectedItemList(false),
+          Container(
+              margin: EdgeInsets.all(20),
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [DateBtn(), SubmitBtn()]))
+        ]);
   }
 
   SelectTimeBtn(int idx) {
@@ -548,8 +557,13 @@ class _MyHomePageState extends State<MyHomePage> {
         options.add('$h:' + minutes);
       }
     }
-    return DropdownButton(
-        value: time.isEmpty ? null : time,
+    return Container(
+      height: ScreenSize(context).height / 21,
+      width: ScreenSize(context).width / 15,
+      margin: EdgeInsets.only(bottom: 8),
+      child: DropdownButtonFormField(
+        alignment: Alignment.center,
+        value: time.isEmpty ? null : widget.selectedItems[idx].item2,
         items: options.map((String time) {
           return DropdownMenuItem<String>(
             value: time,
@@ -559,9 +573,50 @@ class _MyHomePageState extends State<MyHomePage> {
         hint: Text('בחירת שעה', style: TextStyle(color: Colors.pinkAccent)),
         onChanged: (String? value) {
           setState(() {
-              widget.selectedItems[idx] =
-                  widget.selectedItems[idx].withItem2(value!);
+            widget.selectedItems[idx] =
+                widget.selectedItems[idx].withItem2(value!);
           });
-        });
+        },
+      ),
+    );
   }
+
+  SubmitBtn() {
+    return IconButton(
+        onPressed: () {
+          SendRoute();
+        },
+        icon: Icon(Icons.send, color: Colors.pinkAccent));
+  }
+
+  DateBtn() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+            height: ScreenSize(context).height / 21,
+            width: ScreenSize(context).width / 15,
+            child: TextFormField(
+                textAlign: TextAlign.center,
+                decoration: InputDecoration(border: OutlineInputBorder()),
+                controller: ctrl,
+                style: TextStyle(fontSize: 16))),
+        TextButton(
+            onPressed: () async {
+              DateTime? date = await showDatePicker(
+                  context: context,
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime(2020, 1),
+                  lastDate: DateTime.now().add(Duration(days: 365)));
+              setState(() {
+                selectedDate = date!;
+                ctrl.text = formatDate(selectedDate);
+              });
+            },
+            child: Text('שינוי התאריך')),
+      ],
+    );
+  }
+
+  void SendRoute() {}
 }
