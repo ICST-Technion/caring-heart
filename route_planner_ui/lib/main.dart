@@ -667,8 +667,9 @@ class _MyHomePageState extends State<MyHomePage> {
   bool areTimesLegal(List<Tuple2<Item, String>> list) {
     for (int i = 0; i < list.length - 1; i++) {
       String t1 = list[i].item2, t2 = list[i + 1].item2;
-      if (int.parse(t1.split(':')[0]) > int.parse(t2.split(':')[0]) ||
-          int.parse(t1.split(':')[1]) > int.parse(t2.split(':')[1])) {
+      final h1 = int.parse(t1.split(':')[0]), m1 = int.parse(t1.split(':')[1]);
+      final h2 = int.parse(t2.split(':')[0]), m2 = int.parse(t2.split(':')[1]);
+      if (h1 > h2 || (h1 == h2 && m1 > m2)) {
         return false;
       }
     }
