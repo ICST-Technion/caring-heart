@@ -19,4 +19,13 @@ function onFormSubmit(e, formFields=constants.FORM_FIELDS, addToSheets=true) {
   console.log(`Submitted new item to form: ${JSON.stringify(item)}`)
   inventory.addItem(item)
   console.log('Succefully uploaded item to database!')
+  // const keys = SpreadsheetApp.getActive().getRange(2, 1, 100, 1).getValues()
+  // let row = 2
+  // for(const [key] of keys){
+  //   if(!!!key){
+  //     SpreadsheetApp.getActive().getRange(row,1, 1, constants.FIELDS.length).setValues([constants.FIELDS.map(({name}) => item[name])])
+  //     break
+  //   }
+  //   row++
+  // }
 }
