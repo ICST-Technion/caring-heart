@@ -3,7 +3,7 @@ library item_spec;
 class Item {
   final String address;
   // final String floor;
-  // final String aptNumber;
+  // final String apartment;
   final String neighborhood;
   final String category;
   final String city;
@@ -15,11 +15,12 @@ class Item {
   final bool isCollected;
   final String name;
   final String id;
+  // final String pickupTime;
   final String phone;
 
   Item({required this.address,
     // required this.floor,
-    // required this.aptNumber,
+    // required this.apartment,
     required this.neighborhood,
     required this.category,
     required this.city,
@@ -31,6 +32,7 @@ class Item {
     required this.isCollected,
     required this.name,
     required this.id,
+    // required this.pickupTime,
     required this.phone});
 
   factory Item.fromJson(String id, Map<String, dynamic> json) {
@@ -38,8 +40,8 @@ class Item {
         id: id,
         address: json['address'],
         // floor: json['floor'],
-        // aptNumber: json['aptNumber'],
-        neighborhood: json['neighborhood'],
+        // apartment: json['apartment'],
+        neighborhood: json['neighbourhood'],
         category: json['category'],
         city: json['city'],
         comments: json['comments'],
@@ -49,6 +51,7 @@ class Item {
         isChecked: json['isChecked'],
         isCollected: json['isCollected'],
         name: json['name'],
+        // pickupTime: time,
         phone: json['phone'].toString());
   }
 }

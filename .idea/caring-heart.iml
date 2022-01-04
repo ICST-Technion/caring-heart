@@ -8,6 +8,9 @@
       <excludeFolder url="file://$MODULE_DIR$/driver_interface/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/driver_interface/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/driver_interface/build" />
+      <excludeFolder url="file://$MODULE_DIR$/item_spec/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/item_spec/build" />
+      <excludeFolder url="file://$MODULE_DIR$/item_spec/.pub" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

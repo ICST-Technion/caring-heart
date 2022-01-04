@@ -8,8 +8,11 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
+  cloud_firestore: ^3.1.5
+  date_format: ^2.0.5
   flutter:
     sdk: flutter
+  tuple: ^2.0.0
 
 dev_dependencies:
   flutter_test:
