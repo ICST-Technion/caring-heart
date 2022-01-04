@@ -41,7 +41,7 @@ class Item {
         address: json['address'],
         // floor: json['floor'],
         // apartment: json['apartment'],
-        neighborhood: json['neighbourhood'],
+        neighborhood: json['neighborhood'],
         category: json['category'],
         city: json['city'],
         comments: json['comments'],
