@@ -228,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ]);
   }
 
-  pickupInfo(Item item) {
+  pickupInfo(Item item, String Function(Item) getPickupTime) {
     final address = item.address;
     final time = item.pickupTime;
     return Row(
