@@ -1,5 +1,9 @@
+library item_spec;
+
 class Item {
   final String address;
+  // final String floor;
+  // final String aptNumber;
   final String neighborhood;
   final String category;
   final String city;
@@ -14,6 +18,8 @@ class Item {
   final String phone;
 
   Item({required this.address,
+    // required this.floor,
+    // required this.aptNumber,
     required this.neighborhood,
     required this.category,
     required this.city,
@@ -31,6 +37,8 @@ class Item {
     return Item(
         id: id,
         address: json['address'],
+        // floor: json['floor'],
+        // aptNumber: json['aptNumber'],
         neighborhood: json['neighborhood'],
         category: json['category'],
         city: json['city'],
@@ -44,3 +52,4 @@ class Item {
         phone: json['phone'].toString());
   }
 }
+

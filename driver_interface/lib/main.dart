@@ -3,7 +3,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'item.dart';
+import 'package:item_spec/item_spec.dart';
 import 'item_service.dart' as DB;
 
 void main() {

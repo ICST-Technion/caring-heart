@@ -1,6 +1,6 @@
 import 'package:date_format/date_format.dart';
 
-import 'item.dart';
+import 'package:item_spec/item_spec.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ItemService {
