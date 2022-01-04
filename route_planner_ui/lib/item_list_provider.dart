@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'item.dart';
+import 'package:item_spec/item_spec.dart';
 import 'package:tuple/tuple.dart';
 
 class ItemListProvider with ChangeNotifier {

@@ -10,7 +10,7 @@ import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
 import 'package:tuple/tuple.dart';
 import 'item_service.dart' as DB;
-import 'item.dart';
+import 'package:item_spec/item_spec.dart';
 import 'package:provider/provider.dart';
 
 void main() {

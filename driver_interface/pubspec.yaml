@@ -38,6 +38,10 @@ dependencies:
   intl: ^0.17.0
   date_format: ^2.0.4
 
+  # Custom packages
+  item_spec:
+    path: ../item_spec
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
