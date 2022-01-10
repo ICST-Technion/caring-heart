@@ -1,10 +1,10 @@
 name: item_spec
-description: A new Flutter package project.
+description: Our conssistent globa package for accesing Item(s).
 version: 0.0.1
 homepage:
 
 environment:
-  sdk: ">=2.16.0-80.1.beta <3.0.0"
+  sdk: ">=2.15.0-268.18.beta <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
