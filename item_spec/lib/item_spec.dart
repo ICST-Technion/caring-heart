@@ -1,3 +1,5 @@
+// TODO remove _tempBridgeToNewFirebase after migrating to new Database scheme with floor, apartment...
+
 library item_spec;
 
 extension _GetValue<U, V> on Map<U, V> {

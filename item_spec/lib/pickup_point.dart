@@ -4,6 +4,5 @@ class PickupPoint {
   final Item item;
   final String pickupTime;
 
-  PickupPoint({required this.item,
-    required this.pickupTime});
+  PickupPoint({required this.item, required this.pickupTime});
 }

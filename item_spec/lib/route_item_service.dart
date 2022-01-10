@@ -1,3 +1,4 @@
+import 'package:item_spec/pickup_point.dart';
 import 'package:tuple/tuple.dart';
 
 import 'package:item_spec/item_spec.dart';
@@ -25,12 +26,14 @@ class ItemService {
     return items;
   }
 
-  Future<void> addRouteByItemList(
-      List<Tuple2<Item, String>> list, DateTime date) async {
+  Future<void> addRouteByItemList(List<PickupPoint> list, DateTime date) async {
     final ref = FirebaseFirestore.instance.collection('routesTest');
     ref.add({
       'date': formatDate(date),
-      'items': list.map((e) => {'itemID': e.item1.id, 'time': e.item2}).toList()
+      'items': list
+          .map(
+              (pickup) => {'itemID': pickup.item.id, 'time': pickup.pickupTime})
+          .toList()
     });
   }
 
