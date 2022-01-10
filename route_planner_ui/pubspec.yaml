@@ -40,6 +40,10 @@ dependencies:
   tuple: ^2.0.0
   pointer_interceptor: ^0.9.0+1
 
+  # Custom packages
+  item_spec:
+    path: ../item_spec
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
