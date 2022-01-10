@@ -1,0 +1,33 @@
+{
+  "name": "google-apps-script-starter",
+  "private": true,
+  "scripts": {
+    "build": "webpack --mode none",
+    "build:watch": "npm run build -- --watch",
+    "push": "clasp push --force",
+    "push:watch": "npm run push -- --watch",
+    "deploy": "npm run build && npm run push",
+    "dev": "concurrently \"npm run build:watch\" \"npm run push:watch\" --raw --kill-others",
+    "login": "clasp login",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.3.0",
+    "@types/gapi.client.firestore": "^1.0.2",
+    "@types/google-apps-script": "^1.0.14",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.7.8",
+    "clean-webpack-plugin": "^4.0.0",
+    "concurrently": "^6.2.1",
+    "copy-webpack-plugin": "^10.0.0",
+    "gas-webpack-plugin": "^2.1.0",
+    "jest": "^27.1.0",
+    "prettier": "^2.0.5",
+    "terser-webpack-plugin": "^5.1.4",
+    "ts-jest": "^27.0.5",
+    "ts-loader": "^9.2.5",
+    "typescript": "^4.4.2",
+    "webpack": "^5.51.1",
+    "webpack-cli": "^4.8.0"
+  }
+}
