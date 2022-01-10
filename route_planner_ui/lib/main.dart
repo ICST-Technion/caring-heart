@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:item_spec/pickup_point.dart';
 import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
 import 'package:tuple/tuple.dart';
@@ -131,7 +132,7 @@ class MyHomePage extends StatefulWidget {
 
   final String title;
   final List<Item> itemList;
-  List<Tuple2<Item, String>> selectedItems = [];
+  List<PickupPoint> selectedItems = [];
   String currentMapSrc = '';
 
   @override
@@ -246,8 +247,8 @@ class _MyHomePageState extends State<MyHomePage> {
         height: ScreenSize(context).height / 2.4,
         child: ReorderableList(
             shrinkWrap: true,
-            itemBuilder: (context, idx) => getSelectedItem(
-                widget.selectedItems[idx].item1, idx, draggable),
+            itemBuilder: (context, idx) =>
+                getSelectedItem(widget.selectedItems[idx].item, idx, draggable),
             itemCount: widget.selectedItems.length,
             onReorder: (prev, current) {
               setState(() {
@@ -375,10 +376,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 .SelectItemAt(index);
             setState(() {
               if (value) {
-                widget.selectedItems.add(Tuple2(item, ""));
+                widget.selectedItems
+                    .add(PickupPoint(item: item, pickupTime: ""));
               } else {
                 widget.selectedItems
-                    .removeWhere((element) => element.item1 == item);
+                    .removeWhere((element) => element.item == item);
               }
             });
           });
@@ -547,7 +549,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   SelectTimeBtn(int idx) {
     List<String> options = [];
-    String time = widget.selectedItems[idx].item2;
+    String time = widget.selectedItems[idx].pickupTime;
     for (int h = 8; h <= 18; h++) {
       for (int m = 0; m < 60; m += 15) {
         String minutes = m == 0 ? '00' : m.toString();
@@ -561,7 +563,7 @@ class _MyHomePageState extends State<MyHomePage> {
       margin: EdgeInsets.only(bottom: 8),
       child: DropdownButtonFormField(
         alignment: Alignment.center,
-        value: time.isEmpty ? null : widget.selectedItems[idx].item2,
+        value: time.isEmpty ? null : widget.selectedItems[idx].pickupTime,
         items: options.map((String time) {
           return DropdownMenuItem<String>(
             value: time,
@@ -571,8 +573,9 @@ class _MyHomePageState extends State<MyHomePage> {
         hint: Text('בחירת שעה', style: TextStyle(color: Colors.pinkAccent)),
         onChanged: (String? value) {
           setState(() {
+            final selectedItem = widget.selectedItems[idx];
             widget.selectedItems[idx] =
-                widget.selectedItems[idx].withItem2(value!);
+                PickupPoint(item: selectedItem.item, pickupTime: value!);
           });
         },
       ),
@@ -644,7 +647,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<RouteDialogStatus> SendRoute() async {
-    if (widget.selectedItems.any((element) => element.item2 == '')) {
+    if (widget.selectedItems.any((element) => element.pickupTime == '')) {
       return RouteDialogStatus.noPickupTime;
     } else if (compareDates(selectedDate, DateTime.now()) < 0) {
       return RouteDialogStatus.badDate;
@@ -664,9 +667,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return d1.compareTo(d2);
   }
 
-  bool areTimesLegal(List<Tuple2<Item, String>> list) {
+  bool areTimesLegal(List<PickupPoint> list) {
     for (int i = 0; i < list.length - 1; i++) {
-      String t1 = list[i].item2, t2 = list[i + 1].item2;
+      String t1 = list[i].pickupTime, t2 = list[i + 1].pickupTime;
       final h1 = int.parse(t1.split(':')[0]), m1 = int.parse(t1.split(':')[1]);
       final h2 = int.parse(t2.split(':')[0]), m2 = int.parse(t2.split(':')[1]);
       if (h1 > h2 || (h1 == h2 && m1 > m2)) {

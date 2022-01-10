@@ -1,38 +1,46 @@
 import 'package:date_format/date_format.dart';
 
 import 'package:item_spec/item_spec.dart';
+import 'package:item_spec/pickup_point.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ItemService {
   ItemService();
 
-  Future<List<Item>> getItems() async {
+  Future<List<PickupPoint>> getItems(
+      {DateTime Function() getDay = DateTime.now}) async {
+    final day = getDay();
     final route = FirebaseFirestore.instance.collection('routesTest');
     return route
-        .where('date',
-            isEqualTo: formatDate(DateTime.now(), [yyyy, '-', mm, '-', dd]))
+        .where('date', isEqualTo: formatDate(day, [yyyy, '-', mm, '-', dd]))
         .get()
-        .then((res) => createItemListFromRoute(res.docs));
+        .then((res) => createPickupPointListFromRoute(res.docs));
   }
 
-  Future<List<Item>> createItemListFromRoute(
+  Future<List<PickupPoint>> createPickupPointListFromRoute(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
-    List<Item> items = [];
+    List<PickupPoint> pickupPoints = [];
     for (var doc in docs) {
-      final List currentItems = doc.data()['items'];
-      for (var item in currentItems) {
-        var data = await getItemByID(item['itemID']);
-        if (!data['isCollected']) {
-          items.add(Item.fromJson(item['itemID'], data.data(), item['time']));
-        }
+      final List<dynamic> pickupPointsJson = doc.data()['items'];
+      // print('pickupPointsJson:');
+      // print(pickupPointsJson);
+      for (final pickup in pickupPointsJson) {
+        final Item item = await getItemByID(pickup['itemID']);
+        pickupPoints.add(PickupPoint(item: item, pickupTime: pickup['time']));
       }
     }
-    return items;
+    return pickupPoints;
   }
 
-  getItemByID(id) {
-    final inventory = FirebaseFirestore.instance.collection('inventoryTest');
-    return inventory.doc(id).get();
+  Future<Item> getItemByID(String id) async {
+    const collectionPath = 'inventoryTest';
+    final inventory = FirebaseFirestore.instance.collection(collectionPath);
+    final itemData = await inventory.doc(id).get();
+    if (!itemData.exists) {
+      throw Exception(
+          '$id does not exists in firebase collection $collectionPath');
+    }
+    return Item.fromJson(id, itemData.data()!);
   }
 
   Future<void> collectItem(id) async {
