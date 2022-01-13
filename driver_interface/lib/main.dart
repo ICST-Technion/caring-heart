@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'package:driver_interface/report_dialog.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:item_spec/pickup_point.dart';
@@ -159,18 +160,24 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   ItemList(List<PickupPoint> items) {
-    return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, int index) {
-        if (index == 0) {
-          return TopItem(items[index]);
-        }
-        return ListItem(items[index]);
-      },
+    List<Widget> allWidgets = [
+      ElevatedButton(
+          onPressed: () => showDialog(
+              context: context,
+              // builder: (context) => Dialog(
+              //   child: Text('hi'),
+              // ),
+              builder: (context) => ReportDialog(
+                  pickupPoint: items[0], inventoryItems: ['aa', 'ab', 'gg'])),
+          child: Text('press me!'))
+    ];
+    allWidgets.addAll(items.map(TopItem));
+    return ListView(
+      children: allWidgets,
     );
   }
 
-  TopItem(PickupPoint item) {
+  Card TopItem(PickupPoint item) {
     return Card(
         margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         elevation: 4,

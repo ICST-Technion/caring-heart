@@ -41,6 +41,7 @@ dependencies:
   # Custom packages
   item_spec:
     path: ../item_spec
+  flutter_typeahead: ^3.2.4
 
 dev_dependencies:
   flutter_test:
