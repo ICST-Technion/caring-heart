@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'package:expandable/expandable.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:item_spec/pickup_point.dart';
@@ -139,66 +140,45 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(widget.title),
         ),
         body: Center(child: ItemList(widget.itemList)),
-        bottomNavigationBar: BottomNavBar(),
       ),
     );
   }
 
-  BottomNavBar() {
-    return BottomNavigationBar(
-      currentIndex: 0, // this will be set when a new tab is tapped
-      items: [
-        BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined), label: 'מסלול יומי'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_view_week), label: 'מסלולים שבועיים'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz), label: 'פריטים שנאספו')
-      ],
-    );
-  }
-
   ItemList(List<PickupPoint> items) {
-    return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, int index) {
-        if (index == 0) {
-          return TopItem(items[index]);
-        }
-        return ListItem(items[index]);
-      },
+    return ListView(
+      children: items.map(ItemCard).toList(),
     );
   }
 
-  TopItem(PickupPoint item) {
+  Widget ItemCard(PickupPoint item) {
     return Card(
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        elevation: 4,
-        child: Center(
-          child: Column(
-            children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: ItemStuff(item),
-              ),
-              const Divider(height: 1),
-              AcceptOrReject(item)
-            ],
-          ),
-        ));
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      elevation: 4,
+      child: ExpandablePanel(
+        header: ListItem(item),
+        collapsed: Container(),
+        expanded: CardButtons(item),
+        theme: ExpandableThemeData(
+            headerAlignment: ExpandablePanelHeaderAlignment.center),
+      ),
+    );
+  }
+
+  Widget CardButtons(PickupPoint item) {
+    return Center(
+      child: Column(
+        children: [const Divider(height: 1), AcceptOrReject(item)],
+      ),
+    );
   }
 
   ListItem(PickupPoint item) {
-    return Card(
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        elevation: 4,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            child: ItemStuff(item),
-          ),
-        ));
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+        child: ItemStuff(item),
+      ),
+    );
   }
 
   Row ItemStuff(PickupPoint item) {
