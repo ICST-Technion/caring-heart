@@ -17,7 +17,7 @@ function onFormSubmit(e, formFields=constants.FORM_FIELDS, addToSheets=true) {
   const item = formValuesToItem(e.values, formFields)
   const inventory = getInventory()
   console.log(`Submitted new item to form: ${JSON.stringify(item)}`)
-  inventory.addItem(item)
+  inventory.addItem(item, false) // formSheets = false
   console.log('Succefully uploaded item to database!')
   // const keys = SpreadsheetApp.getActive().getRange(2, 1, 100, 1).getValues()
   // let row = 2

@@ -1,6 +1,18 @@
 const functions = require("firebase-functions");
 const { google } = require("googleapis");
 const sheets = google.sheets("v4");
+const { constants } = require("./constants")
+
+
+const FORMAT_FIELDS = {
+    date: formatDate,
+}
+
+function format(field, value, format_fields=FORMAT_FIELDS){
+    if(field in format_fields)
+        return format_fields[field](value);
+    return value;
+}
 
 //const spreadsheetId = "1KEnhldGfYakoIgibePV0pxbEiEr2kgRbj2RQyg3R51c";
 const spreadsheetId = "1X1q6YAQdXoEmkUn2KhygDzswDlwZ8epW2NL3jSu1tj0";
@@ -25,10 +37,15 @@ exports.createSheets = functions.firestore.document(documentPath)
         if (data.fromSheets){
             return snap.ref.set({ fromSheets: false}, {merge: true});
         }
-        values = [[context.params.documentId, true, data.name, data.address, data.neighborhood, data.city, data.phone, data.category,
-                data.description, formatDate(data.date), data.comments, data.email, data.isChecked, data.isCollected]];
+        const values = getRowValues(data, context.params.documentId);
         return sheetAppendLine(values, getSheetName());
     });
+
+function getRowValues(data, documentId) {
+    const columnData = constants.FORMAT_FIELDS.map(field => format(data[field.name]));
+    const values = [[documentId, true, ...columnData]];
+    return values;
+}
 
 async function sheetAppendLine(values, range) {
     await jwtAuthPromise;
@@ -56,12 +73,12 @@ exports.updateSheets = functions.firestore.document(documentPath)
         if (change.before.data().fromSheets && !data.fromSheets){
             return null;
         }
-        let formula = `=MATCH("${context.params.documentId}", Sheet1!A:A, 0)`;
+        let formula = `=MATCH("${context.params.documentId}", ${getSheetName()}!A:A, 0)`;
         sheetsUpdate([[formula]], "LookUp_Sheet789!A1", "USER_ENTERED").then(( response) => {
             line = response.data.updatedData.values[0][0];
             
-            values = [[context.params.documentId, true, data.name, data.address, data.neighborhood, data.city, data.phone, data.category,
-            data.description, formatDate(data.date), data.comments, data.email, data.isChecked, data.isCollected]];
+            const values = getRowValues(data, context.params.documentId);
+
             if (isNaN(line)){
                 sheetAppendLine(values, getSheetName());
             }
