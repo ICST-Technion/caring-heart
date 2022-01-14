@@ -136,3 +136,8 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 /.idea
+
+*/.dart_tool/*
+*/.node_modules/*
+*/node_modules/*
+/functions/node_modules/
