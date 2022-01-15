@@ -43,6 +43,7 @@ dependencies:
   # Custom packages
   item_spec:
     path: ../item_spec
+  drag_and_drop_lists: ^0.3.2+2
 
 dev_dependencies:
   flutter_test:
