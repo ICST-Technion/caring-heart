@@ -67,18 +67,22 @@ async function sheetAppendLine(values, range) {
 exports.updateSheets = functions.firestore.document(documentPath)
     .onUpdate(async (change, context) => {
         const data = change.after.data();
+        functions.logger.log("RUNNING updateSheets() with new data", data);
         if (data.fromSheets){
+            functions.logger.log("Change is from sheets");
             return change.after.ref.set({ fromSheets: false}, {merge: true});
         }
+        functions.logger.log("Change is not from sheets");
         if (change.before.data().fromSheets && !data.fromSheets){
+            functions.logger.log("Change was prev. from sheets, now it's not");
             return null;
         }
         let formula = `=MATCH("${context.params.documentId}", ${getSheetName()}!A:A, 0)`;
         sheetsUpdate([[formula]], "LookUp_Sheet789!A1", "USER_ENTERED").then(( response) => {
-            line = response.data.updatedData.values[0][0];
-            
+            const line = response.data.updatedData.values[0][0];
+            functions.logger.log(`Found line ${line}`);
             const values = getRowValues(data, context.params.documentId);
-
+            functions.logger.log(`Col values are`, values);
             if (isNaN(line)){
                 sheetAppendLine(values, getSheetName());
             }

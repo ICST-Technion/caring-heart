@@ -137,9 +137,6 @@ dmypy.json
 cython_debug/
 /.idea
 
-<<<<<<< HEAD
-*/.dart_tool/*
-=======
 */.dart_tool/*
 */.node_modules/*
 */node_modules/*
@@ -264,4 +261,3 @@ app.*.symbols
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
->>>>>>> main
