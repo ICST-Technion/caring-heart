@@ -42,7 +42,7 @@ exports.createSheets = functions.firestore.document(documentPath)
     });
 
 function getRowValues(data, documentId) {
-    const columnData = constants.FORMAT_FIELDS.map(field => format(data[field.name]));
+    const columnData = constants.FIELDS.map(field => format(field.name, data[field.name]) ?? '');
     const values = [[documentId, true, ...columnData]];
     return values;
 }
