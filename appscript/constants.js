@@ -1,6 +1,6 @@
 const constants = {
   KEY_COL_IDX: 1,
-  FIRST_COL_IDX: 2,
+  FIRST_COL_IDX: 3,
   // LAST_COL_IDX: 14,
 
   // CHANGED
