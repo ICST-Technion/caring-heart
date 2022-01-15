@@ -28,11 +28,12 @@ class PickupReport {
         collectedItems: null);
   }
 
-  factory PickupReport.canceled({required String itemID}) {
+  factory PickupReport.canceled(
+      {required String itemID, required String comments}) {
     return PickupReport._(
         itemID: itemID,
         status: PickupReportStatus.canceled,
-        comments: null,
+        comments: comments,
         collectedItems: null);
   }
 
@@ -50,11 +51,12 @@ class PickupReport {
   // without ItemID!, itemID should be the key of the json
   Map<String, dynamic> toJson() {
     Map<String, dynamic> res = {
-      // 'itemID': itemID,
       'status': status.toShortString(),
     };
-    if (status == PickupReportStatus.collected) {
+    if (status != PickupReportStatus.uncollected) {
       res['comments'] = comments!;
+    }
+    if (status == PickupReportStatus.collected) {
       res['collectedItems'] = collectedItems!;
     }
     return res;
@@ -74,7 +76,8 @@ class PickupReport {
         .firstWhere((s) => stringStatus == s.toShortString());
 
     if (status == PickupReportStatus.canceled) {
-      return PickupReport.canceled(itemID: itemID);
+      assert(json.containsKey('comments'));
+      return PickupReport.canceled(itemID: itemID, comments: json['comments']);
     }
     if (status == PickupReportStatus.uncollected) {
       return PickupReport.uncollected(itemID: itemID);
