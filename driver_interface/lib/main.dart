@@ -164,12 +164,19 @@ class _MyHomePageState extends State<MyHomePage> {
       ElevatedButton(
           onPressed: () => showDialog(
               context: context,
-              // builder: (context) => Dialog(
-              //   child: Text('hi'),
-              // ),
               builder: (context) => ReportDialog(
-                  pickupPoint: items[0], inventoryItems: ['aa', 'ab', 'gg'])),
-          child: Text('press me!'))
+                    pickupPoint: items[0],
+                    type: ReportDialogType.collect(['aa', 'ab', 'gg']),
+                  )),
+          child: Text('collect [0]')),
+      ElevatedButton(
+          onPressed: () => showDialog(
+              context: context,
+              builder: (context) => ReportDialog(
+                    pickupPoint: items[0],
+                    type: ReportDialogType.cancel(),
+                  )),
+          child: Text('cancel [0]'))
     ];
     allWidgets.addAll(items.map(TopItem));
     return ListView(
