@@ -10,7 +10,6 @@ import 'package:item_spec/pickup_point.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:item_spec/route_item_service.dart' as DB;
-import 'package:item_spec/driver_item_service.dart' as DB2;
 import 'package:item_spec/item_spec.dart';
 import 'package:provider/provider.dart';
 
@@ -129,6 +128,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
+  var isLoading = false;
+
   MyHomePage({Key? key, required this.title, required this.itemList})
       : super(key: key);
 
@@ -163,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: MyAppBar(),
-        body: RoutePlanner(),
+        body: RoutePlanner()
       ),
     );
   }
@@ -190,6 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 }),
             body: SingleChildScrollView(
               child: Column(children: [
+                getProvider(true).isLoading ? LinearProgressIndicator(minHeight: 8,) : SizedBox(),
                 DateBtn(),
                 ItemList(),
                 Divider(thickness: 2),
@@ -465,7 +467,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void ShowRouteDialog() {
-    if (getProvider(true).isSelectedEmpty()) {
+    if (getProvider(false).isSelectedEmpty()) {
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -492,7 +494,7 @@ class _MyHomePageState extends State<MyHomePage> {
               margin: EdgeInsets.all(20),
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [DateBtn(), SubmitBtn()]))
+                  children: [SizedBox(), SubmitBtn()]))
         ]);
   }
 
@@ -582,12 +584,13 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () async {
               DateTime? date = await showDatePicker(
                   context: context,
-                  initialDate: DateTime.now(),
+                  initialDate: selectedDate,
                   firstDate: DateTime(2020, 1),
                   lastDate: DateTime.now().add(Duration(days: 365)));
               setState(() {
                 selectedDate = date!;
                 ctrl.text = formatDate(selectedDate);
+                getProvider(false).loadNewRoute(date);
               });
             },
             child: Text('שינוי התאריך')),
