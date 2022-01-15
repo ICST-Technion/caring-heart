@@ -209,10 +209,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Row ItemStuff(PickupPoint item) {
-    final category = item.item.category;
+    final description = item.item.description;
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       pickupInfo(item),
-      Text(category, style: const TextStyle(fontSize: 18)),
+      Text(description, style: const TextStyle(fontSize: 18)),
       itemButtons(item.item)
     ]);
   }
