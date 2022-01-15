@@ -1,5 +1,5 @@
-name: driver_interface
-description: The Driver's Interface - Item List & Routes
+name: route_planner_ui
+description: The user interface for the route planner.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -29,14 +29,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  url_launcher: ^6.0.17
+
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   firebase_core: ^1.10.5
   cloud_firestore: ^3.1.4
-  intl: ^0.17.0
-  date_format: ^2.0.4
+  provider: ^6.0.1
+  tuple: ^2.0.0
+  pointer_interceptor: ^0.9.0+1
 
   # Custom packages
   item_spec:

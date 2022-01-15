@@ -2,9 +2,10 @@
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:item_spec/pickup_point.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'item.dart';
-import 'item_service.dart' as DB;
+import 'package:item_spec/item_spec.dart';
+import 'package:item_spec/driver_item_service.dart' as DB;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +30,7 @@ class App extends StatelessWidget {
       future: _initialization,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
+          // throw snapshot.error!;
           return ErrorScreen(snapshot.error.toString());
         }
         if (snapshot.connectionState == ConnectionState.done) {
@@ -66,29 +68,32 @@ class App extends StatelessWidget {
 class MyApp extends StatelessWidget {
   MyApp({Key? key}) : super(key: key);
 
-  final Future<List<Item>> _itemList = DB.ItemService().getItems();
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final dayToShow = DateTime(2021, 12, 22); // TODO change to DateTime.now()
+    final Future<List<PickupPoint>> _itemList =
+        DB.ItemService().getItems(getDay: () => dayToShow);
     return FutureBuilder(
-        future: _itemList,
-        builder: (context, AsyncSnapshot<List<Item>> snapshot) {
-          if (snapshot.hasError) {
-            return ErrorScreen(snapshot.error.toString());
-          }
-          if (snapshot.connectionState == ConnectionState.done) {
-            return MaterialApp(
-              title: 'מסלול יומי',
-              theme: ThemeData(
-                primarySwatch: Colors.pink,
-              ),
-              debugShowCheckedModeBanner: false,
-              home: MyHomePage(title: 'מסלול יומי', itemList: snapshot.data!),
-            );
-          }
-          return LoadingDataScreen();
-        });
+      future: _itemList,
+      builder: (context, AsyncSnapshot<List<PickupPoint>> snapshot) {
+        if (snapshot.hasError) {
+          // throw snapshot.error!;
+          return ErrorScreen(snapshot.error.toString());
+        }
+        if (snapshot.connectionState == ConnectionState.done) {
+          return MaterialApp(
+            title: 'מסלול יומי',
+            theme: ThemeData(
+              primarySwatch: Colors.pink,
+            ),
+            debugShowCheckedModeBanner: false,
+            home: MyHomePage(title: 'מסלול יומי', itemList: snapshot.data!),
+          );
+        }
+        return LoadingDataScreen();
+      },
+    );
   }
 
   Widget LoadingDataScreen() {
@@ -118,7 +123,7 @@ class MyHomePage extends StatefulWidget {
       : super(key: key);
 
   final String title;
-  final List<Item> itemList;
+  final List<PickupPoint> itemList;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -127,29 +132,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    /*final testList = [
-      {
-        'address': 'ויצמן 17, חיפה',
-        'name': 'משה סלומון',
-        'category': 'כסא',
-        'phone': '0529981374',
-        'time': '08:00'
-      },
-      {
-        'address': 'שולמן 3, זכרון יעקב',
-        'name': 'שמעון חדד',
-        'category': 'סלון + מכונת כביסה',
-        'phone': '0574498643',
-        'time': '09:00'
-      },
-      {
-        'address': 'בן יהודה 33, חיפה',
-        'name': 'יעקב בר',
-        'category': 'מיטה + מזרון',
-        'phone': '0504442213',
-        'time': '10:00'
-      }
-    ];*/
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -176,7 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  ItemList(List<Item> items) {
+  ItemList(List<PickupPoint> items) {
     return ListView.builder(
       itemCount: items.length,
       itemBuilder: (context, int index) {
@@ -188,7 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  TopItem(Item item) {
+  TopItem(PickupPoint item) {
     return Card(
         margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         elevation: 4,
@@ -207,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  ListItem(Item item) {
+  ListItem(PickupPoint item) {
     return Card(
         margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         elevation: 4,
@@ -219,17 +201,17 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  Row ItemStuff(Item item) {
-    final category = item.category;
+  Row ItemStuff(PickupPoint item) {
+    final description = item.item.description;
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       pickupInfo(item),
-      Text(category, style: const TextStyle(fontSize: 18)),
-      itemButtons(item)
+      Text(description, style: const TextStyle(fontSize: 18)),
+      itemButtons(item.item)
     ]);
   }
 
-  pickupInfo(Item item) {
-    final address = item.address;
+  pickupInfo(PickupPoint item) {
+    final address = item.item.address;
     final time = item.pickupTime;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -262,14 +244,16 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  AcceptOrReject(Item item) {
+  AcceptOrReject(PickupPoint item) {
     return IntrinsicHeight(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Expanded(
             child: TextButton(
-                onPressed: () => AcceptItem(item),
+                onPressed: () async {
+                  await AcceptItem(item);
+                },
                 child: const Text(
                   'אישור',
                   style: TextStyle(color: Colors.green, fontSize: 18),
@@ -296,11 +280,20 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  AcceptItem(Item item) {
-    //todo: backend
+  AcceptItem(PickupPoint item) async {
+    await DB.ItemService().collectItem(item.item.id);
+    setState(() {
+      widget.itemList.remove(item);
+    });
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('האיסוף הושלם'),
+      duration: Duration(milliseconds: 1200),
+    ));
   }
 
-  RejectItem(Item item) {
-    //todo: backend
+  RejectItem(PickupPoint item) {
+    setState(() {
+      widget.itemList.remove(item);
+    });
   }
 }
