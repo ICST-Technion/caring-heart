@@ -9,19 +9,35 @@ List<String> _searchContains(final String query, final List<String> items) {
   return items.where((ii) => ii.contains(query.toLowerCase())).toList();
 }
 
+class ReportDialogType {
+  late final PickupReportStatus status;
+  late final List<String>? inventoryItems;
+  ReportDialogType._(this.status, this.inventoryItems);
+  factory ReportDialogType.collect(List<String> inventoryItems) {
+    return ReportDialogType._(PickupReportStatus.collected, inventoryItems);
+  }
+  factory ReportDialogType.cancel() {
+    return ReportDialogType._(PickupReportStatus.canceled, null);
+  }
+  bool isCollect() => status == PickupReportStatus.collected;
+  bool isCancel() => status == PickupReportStatus.canceled;
+}
+
 class ReportDialog extends StatefulWidget {
   final PickupPoint pickupPoint;
-  final List<String> inventoryItems;
-  late LinkedHashMap<String, bool> inventoryItemsSelection;
+  // final List<String> inventoryItems;
+  final ReportDialogType type;
+  LinkedHashMap<String, bool>? inventoryItemsSelection;
   final reportService = getFirebaseReportService();
   String comments = '';
-  ReportDialog(
-      {Key? key, required this.pickupPoint, required this.inventoryItems})
+  ReportDialog({Key? key, required this.pickupPoint, required this.type})
       : super(key: key) {
-    final category = pickupPoint.item.category;
-    final initialItems = _searchContains(category, inventoryItems);
-    inventoryItemsSelection =
-        LinkedHashMap.fromEntries(initialItems.map((ii) => MapEntry(ii, true)));
+    final description = pickupPoint.item.description;
+    if (type.isCollect()) {
+      final initialItems = _searchContains(description, type.inventoryItems!);
+      inventoryItemsSelection = LinkedHashMap.fromEntries(
+          initialItems.map((ii) => MapEntry(ii, true)));
+    }
   }
 
   @override
@@ -31,25 +47,6 @@ class ReportDialog extends StatefulWidget {
 class _ReportDialogState extends State<ReportDialog> {
   @override
   Widget build(BuildContext context) {
-    final autoComplete = TypeAheadField(
-        textFieldConfiguration: const TextFieldConfiguration(
-            autofocus: true,
-            decoration: InputDecoration(
-                labelText: 'חפש פריט', icon: Icon(Icons.add_circle_outline))),
-        suggestionsCallback: (String suggest) {
-          if (suggest.isEmpty) {
-            return widget.inventoryItems;
-          }
-          return _searchContains(suggest, widget.inventoryItems);
-        },
-        itemBuilder: (context, String item) => ListTile(
-              title: Text(item),
-            ),
-        onSuggestionSelected: (String item) {
-          setState(() {
-            widget.inventoryItemsSelection[item] = true;
-          });
-        });
     final commentsInput = TextField(
       onChanged: (value) {
         widget.comments = value;
@@ -60,13 +57,31 @@ class _ReportDialogState extends State<ReportDialog> {
       ),
       maxLines: null,
     );
-    const text = Text(
-      'בחר פריטים:',
-      style: TextStyle(fontSize: 16),
-      textAlign: TextAlign.right,
-    );
-    final List<Widget> widgets = [commentsInput, autoComplete];
-    widgets.addAll(_itemsCheckboxes(widget.inventoryItemsSelection));
+
+    final List<Widget> widgets = [commentsInput];
+    if (widget.type.isCollect()) {
+      final autoComplete = TypeAheadField(
+          textFieldConfiguration: const TextFieldConfiguration(
+              autofocus: true,
+              decoration: InputDecoration(
+                  labelText: 'חפש פריט', icon: Icon(Icons.add_circle_outline))),
+          suggestionsCallback: (String suggest) {
+            if (suggest.isEmpty) {
+              return widget.type.inventoryItems!;
+            }
+            return _searchContains(suggest, widget.type.inventoryItems!);
+          },
+          itemBuilder: (context, String item) => ListTile(
+                title: Text(item),
+              ),
+          onSuggestionSelected: (String item) {
+            setState(() {
+              widget.inventoryItemsSelection![item] = true;
+            });
+          });
+      widgets.add(autoComplete);
+      widgets.addAll(_itemsCheckboxes(widget.inventoryItemsSelection!));
+    }
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -80,14 +95,21 @@ class _ReportDialogState extends State<ReportDialog> {
         actions: [
           TextButton(
               onPressed: () async {
-                final collectedItems = widget.inventoryItemsSelection.entries
-                    .where((entry) => entry.value == true)
-                    .map((entry) => entry.key)
-                    .toList();
-                final report = PickupReport.collected(
-                    itemID: widget.pickupPoint.item.id,
-                    comments: widget.comments,
-                    collectedItems: collectedItems);
+                late PickupReport report;
+                if (widget.type.isCollect()) {
+                  final collectedItems = widget.inventoryItemsSelection!.entries
+                      .where((entry) => entry.value == true)
+                      .map((entry) => entry.key)
+                      .toList();
+                  report = PickupReport.collected(
+                      itemID: widget.pickupPoint.item.id,
+                      comments: widget.comments,
+                      collectedItems: collectedItems);
+                } else {
+                  report = PickupReport.canceled(
+                      itemID: widget.pickupPoint.item.id,
+                      comments: widget.comments);
+                }
 
                 await widget.reportService.setReport(report);
                 Navigator.of(context).pop();
