@@ -13,7 +13,7 @@ Map<String, dynamic> _tempBridgeToNewFirebase(
   final Map<String, dynamic> res = Map.from(oldFirebaseItem);
 
   // arbitrary values that are a function of the old item
-  final floor = (res['name'] as String).length % 5;
+  final floor = 1; //(res['name'] as String).length % 5;
   res['floor'] = '$floor';
   res['apartment'] = '${floor + 1}';
   return res;
@@ -33,25 +33,25 @@ class Item {
   final bool isCollected;
   final String name;
   final String id;
+
   // final String pickupTime;
   final String phone;
 
-  Item(
-      {required this.address,
-      required this.floor,
-      required this.apartment,
-      required this.neighborhood,
-      required this.city,
-      required this.comments,
-      required this.date,
-      required this.description,
-      required this.email,
-      required this.isChecked,
-      required this.isCollected,
-      required this.name,
-      required this.id,
-      // required this.pickupTime,
-      required this.phone});
+  Item({required this.address,
+    required this.floor,
+    required this.apartment,
+    required this.neighborhood,
+    required this.city,
+    required this.comments,
+    required this.date,
+    required this.description,
+    required this.email,
+    required this.isChecked,
+    required this.isCollected,
+    required this.name,
+    required this.id,
+    // required this.pickupTime,
+    required this.phone});
 
   factory Item.fromJson(String id, Map<String, dynamic> json) {
     json = _tempBridgeToNewFirebase(json);
@@ -72,4 +72,5 @@ class Item {
         // pickupTime: time,
         phone: json.getNotNull('phone').toString());
   }
+
 }
