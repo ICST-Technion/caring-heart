@@ -24,7 +24,6 @@ class Item {
   final String floor;
   final String apartment;
   final String neighborhood;
-  final String category;
   final String city;
   final String comments;
   final DateTime date;
@@ -42,7 +41,6 @@ class Item {
       required this.floor,
       required this.apartment,
       required this.neighborhood,
-      required this.category,
       required this.city,
       required this.comments,
       required this.date,
@@ -63,7 +61,6 @@ class Item {
         floor: json.getNotNull('floor'),
         apartment: json.getNotNull('apartment'),
         neighborhood: json.getNotNull('neighborhood'),
-        category: json.getNotNull('category'),
         city: json.getNotNull('city'),
         comments: json.getNotNull('comments'),
         date: json.getNotNull('date').toDate(),

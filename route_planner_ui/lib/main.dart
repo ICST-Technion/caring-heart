@@ -326,9 +326,8 @@ class _MyHomePageState extends State<MyHomePage> {
       3: item.city,
       4: item.phone,
       5: item.description,
-      6: item.category,
-      7: item.date,
-      8: item.comments,
+      6: item.date,
+      7: item.comments,
     };
     List<Widget> textBoxes = [];
     info.forEach((key, value) {
@@ -397,9 +396,8 @@ class _MyHomePageState extends State<MyHomePage> {
       3: item.city,
       4: item.phone,
       5: item.description,
-      6: item.category,
-      7: item.date,
-      8: item.comments,
+      6: item.date,
+      7: item.comments,
     };
     List<Widget> textBoxes = [];
     info.forEach((key, value) {
