@@ -7,10 +7,10 @@ import 'dart:ui' as ui;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:item_spec/pickup_point.dart';
-import 'package:pointer_interceptor/pointer_interceptor.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:item_spec/route_item_service.dart' as DB;
+import 'package:item_spec/driver_item_service.dart' as DB2;
 import 'package:item_spec/item_spec.dart';
 import 'package:provider/provider.dart';
 
@@ -88,7 +88,9 @@ class MyApp extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.done) {
             return ChangeNotifierProvider(
               create: (_) => ItemListProvider(
-                  list: snapshot.data!.map((e) => Tuple2(false, e)).toList()),
+                  itemList:
+                      snapshot.data!.map((e) => Tuple2(false, e)).toList(),
+                  selectedItems: []),
               child: MaterialApp(
                 title: 'תכנון מסלול',
                 theme: ThemeData(
@@ -133,7 +135,6 @@ class MyHomePage extends StatefulWidget {
   final String title;
   final List<Item> itemList;
   List<PickupPoint> selectedItems = [];
-  String currentMapSrc = '';
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -143,32 +144,12 @@ enum RouteDialogStatus { success, noPickupTime, badDate, badTimes }
 
 class _MyHomePageState extends State<MyHomePage> {
   bool _isAscending = true;
-  IFrameElement mapElement = IFrameElement();
-  Widget map = Container();
   DateTime selectedDate = DateTime.now();
   TextEditingController ctrl = new TextEditingController();
 
   @override
   void initState() {
     ctrl.text = formatDate(DateTime.now());
-
-    widget.currentMapSrc = 'https://maps.openrouteservice.org/';
-    mapElement.src = widget.currentMapSrc;
-    mapElement.style.border = 'none';
-    mapElement.width = '1920';
-    mapElement.height = '1080';
-    mapElement.blur();
-    mapElement.requestPointerLock();
-    // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(
-      'iframeElement',
-      (int viewId) => mapElement,
-    );
-    map = HtmlElementView(
-      key: UniqueKey(),
-      viewType: 'iframeElement',
-    );
-
     super.initState();
   }
 
@@ -181,15 +162,19 @@ class _MyHomePageState extends State<MyHomePage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
+        appBar: MyAppBar(),
         body: RoutePlanner(),
       ),
     );
   }
 
-  RoutePlanner() {
+  AppBar MyAppBar() {
+    return AppBar(
+      title: Center(child: Text(widget.title)),
+    );
+  }
+
+  Widget RoutePlanner() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -205,6 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 }),
             body: SingleChildScrollView(
               child: Column(children: [
+                DateBtn(),
                 ItemList(),
                 Divider(thickness: 2),
                 Text(
@@ -222,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  ItemList() {
+  Widget ItemList() {
     return Column(
       children: [
         Container(
@@ -232,31 +218,28 @@ class _MyHomePageState extends State<MyHomePage> {
           height: ScreenSize(context).height / 2.6,
           child: ListView.builder(
               shrinkWrap: true,
-              itemCount: Provider.of<ItemListProvider>(context, listen: true)
-                  .list
-                  .length,
+              itemCount: getProvider(true).itemList.length,
               itemBuilder: (context, idx) => getItem(context, idx)),
         ),
       ],
     );
   }
 
-  SelectedItemList(bool draggable) {
-    if (widget.selectedItems.isNotEmpty) {
+  Widget SelectedItemList(bool draggable) {
+    if (!getProvider(false).isSelectedEmpty()) {
       return SizedBox(
         height: ScreenSize(context).height / 2.4,
         child: ReorderableList(
             shrinkWrap: true,
             itemBuilder: (context, idx) =>
-                getSelectedItem(widget.selectedItems[idx].item, idx, draggable),
-            itemCount: widget.selectedItems.length,
+                getSelectedItem(getProvider(true).selectedItems[idx].item, idx, draggable),
+            itemCount: getProvider(true).selectedItems.length,
             onReorder: (prev, current) {
               setState(() {
                 if (current > prev) {
                   current = current - 1;
                 }
-                final item = widget.selectedItems.removeAt(prev);
-                widget.selectedItems.insert(current, item);
+                getProvider(false).moveSelectedItemAt(prev, current);
               });
             }),
       );
@@ -269,7 +252,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  getItem(context, idx) {
+  Widget getItem(context, idx) {
     return Card(
         margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
         elevation: 3,
@@ -281,7 +264,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  getSelectedItem(Item item, int idx, bool draggable) {
+  Widget getSelectedItem(Item item, int idx, bool draggable) {
     return Card(
         key: ValueKey(item.id),
         margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
@@ -294,7 +277,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  HeadersInfo() {
+  Widget HeadersInfo() {
     return Row(children: [
       SizedBox(width: ScreenSize(context).width / 30),
       ExpandedSizedTextBox('שם'),
@@ -308,7 +291,6 @@ class _MyHomePageState extends State<MyHomePage> {
           onTap: () => sortColumn(sortByCity)),
       ExpandedSizedTextBox('טלפון'),
       ExpandedSizedTextBox('תיאור'),
-      ExpandedSizedTextBox('קטגוריה'),
       InkWell(
           child: ExpandedSizedTextBox('תאריך'),
           onTap: () => sortColumn(sortByDate)),
@@ -316,9 +298,8 @@ class _MyHomePageState extends State<MyHomePage> {
     ]);
   }
 
-  ItemInfo(int index) {
-    Item item =
-        Provider.of<ItemListProvider>(context, listen: true).list[index].item2;
+  Widget ItemInfo(int index) {
+    Item item = getProvider(true).itemList[index].item2;
     Map info = {
       0: item.name,
       1: item.address,
@@ -367,29 +348,16 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     textBoxes.insert(0, Builder(builder: (newContext) {
       return Switch(
-          value: Provider.of<ItemListProvider>(context, listen: true)
-              .list[index]
-              .item1,
+          value: getProvider(true).itemList[index].item1,
           onChanged: (value) {
-            Provider.of<ItemListProvider>(newContext, listen: false)
-                .SelectItemAt(index);
-            setState(() {
-              if (value) {
-                widget.selectedItems
-                    .add(PickupPoint(item: item, pickupTime: ""));
-              } else {
-                widget.selectedItems
-                    .removeWhere((element) => element.item == item);
-              }
-            });
+            getProvider(false).SelectItemAt(index);
           });
     }));
     return Row(children: textBoxes);
   }
 
-  SelectedItemInfo(Item item, idx, bool draggable) {
+  Widget SelectedItemInfo(Item item, idx, bool draggable) {
     Map info = {
-      -1: "",
       0: item.name,
       1: item.address,
       2: item.neighborhood,
@@ -447,28 +415,12 @@ class _MyHomePageState extends State<MyHomePage> {
         textDirection: TextDirection.rtl, child: Row(children: textBoxes));
   }
 
-  MyMap() {
+  Widget MyMap() {
     return Expanded(
       child: SizedBox(
-        height: ScreenSize(context).height,
-        width: ScreenSize(context).width / 3,
-        child: Stack(
-          children: [
-            map,
-            PointerInterceptor(
-                child: Container(color: Colors.black.withOpacity(0))),
-            /*Center(
-                child: Card(
-              elevation: 10,
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                child:
-                    Text("to be implemented", style: TextStyle(fontSize: 20)),
-              ),
-            ))*/
-          ],
-        ),
-      ),
+          height: ScreenSize(context).height,
+          width: ScreenSize(context).width / 3,
+          child: Center(child: Text('אני מפה'))),
     );
   }
 
@@ -476,7 +428,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Flexible(child: SizedTextBox(text));
   }
 
-  SizedTextBox(text) {
+  Widget SizedTextBox(text) {
     return SizedBox(
         width: ScreenSize(context).width / 12,
         height: ScreenSize(context).height / 20,
@@ -489,8 +441,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   sortColumn(sort) {
     _isAscending = !_isAscending;
-    Provider.of<ItemListProvider>(context, listen: false)
-        .Sort(sort, _isAscending);
+    getProvider(false).Sort(sort, _isAscending);
   }
 
   sortByNeighbors(a, b) {
@@ -513,8 +464,8 @@ class _MyHomePageState extends State<MyHomePage> {
         date.year.toString();
   }
 
-  ShowRouteDialog() {
-    if (widget.selectedItems.isEmpty) {
+  void ShowRouteDialog() {
+    if (getProvider(true).isSelectedEmpty()) {
       showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -531,7 +482,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  RouteDialogContent() {
+  Widget RouteDialogContent() {
     return Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         mainAxisSize: MainAxisSize.min,
@@ -545,9 +496,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ]);
   }
 
-  SelectTimeBtn(int idx) {
+  Widget SelectTimeBtn(int idx) {
     List<String> options = [];
-    String time = widget.selectedItems[idx].pickupTime;
+    String time = getProvider(true).selectedItems[idx].pickupTime;
     for (int h = 8; h <= 18; h++) {
       for (int m = 0; m < 60; m += 15) {
         String minutes = m == 0 ? '00' : m.toString();
@@ -561,7 +512,7 @@ class _MyHomePageState extends State<MyHomePage> {
       margin: EdgeInsets.only(bottom: 8),
       child: DropdownButtonFormField(
         alignment: Alignment.center,
-        value: time.isEmpty ? null : widget.selectedItems[idx].pickupTime,
+        value: time.isEmpty ? null : getProvider(true).selectedItems[idx].pickupTime,
         items: options.map((String time) {
           return DropdownMenuItem<String>(
             value: time,
@@ -571,16 +522,14 @@ class _MyHomePageState extends State<MyHomePage> {
         hint: Text('בחירת שעה', style: TextStyle(color: Colors.pinkAccent)),
         onChanged: (String? value) {
           setState(() {
-            final selectedItem = widget.selectedItems[idx];
-            widget.selectedItems[idx] =
-                PickupPoint(item: selectedItem.item, pickupTime: value!);
+            getProvider(false).changePickupTimeAt(idx, value!);
           });
         },
       ),
     );
   }
 
-  SubmitBtn() {
+  Widget SubmitBtn() {
     return FloatingActionButton(
         onPressed: () async {
           final status = await SendRoute();
@@ -614,10 +563,12 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Icon(Icons.send));
   }
 
-  DateBtn() {
+  Widget DateBtn() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        SizedBox(height: 10),
+        Text('התאריך שנבחר'),
         Container(
             height: ScreenSize(context).height / 21,
             width: ScreenSize(context).width / 15,
@@ -645,19 +596,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<RouteDialogStatus> SendRoute() async {
-    if (widget.selectedItems.any((element) => element.pickupTime == '')) {
+    if (getProvider(true).selectedItems.any((element) => element.pickupTime == '')) {
       return RouteDialogStatus.noPickupTime;
     } else if (compareDates(selectedDate, DateTime.now()) < 0) {
       return RouteDialogStatus.badDate;
-    } else if (!areTimesLegal(widget.selectedItems)) {
+    } else if (!areTimesLegal(getProvider(true).selectedItems)) {
       return RouteDialogStatus.badTimes;
     }
     await DB.ItemService()
-        .addRouteByItemList(widget.selectedItems, selectedDate);
+        .addRouteByItemList(getProvider(true).selectedItems, selectedDate);
     return RouteDialogStatus.success;
   }
 
-  compareDates(DateTime d1, DateTime d2) {
+  int compareDates(DateTime d1, DateTime d2) {
     if (d1.compareTo(d2) == 0 ||
         (d1.year == d2.year && d1.month == d2.month && d1.day == d2.day)) {
       return 0;
@@ -675,5 +626,9 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
     return true;
+  }
+
+  ItemListProvider getProvider(bool listen) {
+    return Provider.of<ItemListProvider>(context, listen: listen);
   }
 }
