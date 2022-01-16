@@ -1,17 +1,19 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
 import 'dart:async';
-import 'dart:html';
 import 'dart:ui' as ui;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:item_spec/pickup_point.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
+import 'package:route_planner_ui/selected_item_list.dart';
 import 'package:tuple/tuple.dart';
 import 'package:item_spec/route_item_service.dart' as DB;
 import 'package:item_spec/item_spec.dart';
 import 'package:provider/provider.dart';
+import 'logic.dart';
+import 'route_dialog.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -141,8 +143,6 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-enum RouteDialogStatus { success, noPickupTime, badDate, badTimes }
-
 class _MyHomePageState extends State<MyHomePage> {
   bool _isAscending = true;
   DateTime selectedDate = DateTime.now();
@@ -150,22 +150,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    ctrl.text = formatDate(DateTime.now());
+    ctrl.text = Logic.formatDate(DateTime.now());
     super.initState();
   }
 
-  Size ScreenSize(context) {
-    return MediaQuery.of(context).size;
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: MyAppBar(),
-        body: RoutePlanner()
-      ),
+      child: Scaffold(appBar: MyAppBar(), body: RoutePlanner()),
     );
   }
 
@@ -180,18 +174,21 @@ class _MyHomePageState extends State<MyHomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         SizedBox(
-          width: ScreenSize(context).width / 1.5,
-          height: ScreenSize(context).height,
+          width: Logic.ScreenSize(context).width,
+          height: Logic.ScreenSize(context).height,
           child: Scaffold(
             floatingActionButton: FloatingActionButton(
                 tooltip: 'שליחה',
                 child: Icon(Icons.send),
                 onPressed: () {
-                  ShowRouteDialog();
+                  RouteDialogFuncs(context: context, selectedDate: selectedDate)
+                      .ShowRouteDialog();
                 }),
             body: SingleChildScrollView(
               child: Column(children: [
-                getProvider(true).isLoading ? LinearProgressIndicator(minHeight: 8,) : SizedBox(),
+                Logic.getProvider(context,true).isLoading
+                    ? LinearProgressIndicator(minHeight: 9)
+                    : SizedBox(),
                 DateBtn(),
                 ItemList(),
                 Divider(thickness: 2),
@@ -200,12 +197,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   style: TextStyle(fontSize: 20),
                 ),
                 Divider(thickness: 2),
-                SelectedItemList(true)
+                SelectedList(context: context).SelectedItemList(true)
               ]),
             ),
           ),
         ),
-        MyMap()
+        //MyMap()
       ],
     );
   }
@@ -217,42 +214,16 @@ class _MyHomePageState extends State<MyHomePage> {
             child: getItem(context, -1), margin: EdgeInsets.only(top: 10)),
         Container(
           margin: EdgeInsets.only(top: 10),
-          height: ScreenSize(context).height / 2.6,
+          height: Logic.ScreenSize(context).height / 2.6,
           child: ListView.builder(
               shrinkWrap: true,
-              itemCount: getProvider(true).itemList.length,
+              itemCount: Logic.getProvider(context,true).itemList.length,
               itemBuilder: (context, idx) => getItem(context, idx)),
         ),
       ],
     );
   }
 
-  Widget SelectedItemList(bool draggable) {
-    if (!getProvider(false).isSelectedEmpty()) {
-      return SizedBox(
-        height: ScreenSize(context).height / 2.4,
-        child: ReorderableList(
-            shrinkWrap: true,
-            itemBuilder: (context, idx) =>
-                getSelectedItem(getProvider(true).selectedItems[idx].item, idx, draggable),
-            itemCount: getProvider(true).selectedItems.length,
-            onReorder: (prev, current) {
-              setState(() {
-                if (current > prev) {
-                  current = current - 1;
-                }
-                getProvider(false).moveSelectedItemAt(prev, current);
-              });
-            }),
-      );
-    } else {
-      return Center(
-          child: Text(
-        'לא נבחרו מוצרים',
-        style: TextStyle(fontSize: 15),
-      ));
-    }
-  }
 
   Widget getItem(context, idx) {
     return Card(
@@ -266,42 +237,30 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  Widget getSelectedItem(Item item, int idx, bool draggable) {
-    return Card(
-        key: ValueKey(item.id),
-        margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
-        elevation: 3,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: SelectedItemInfo(item, idx, draggable),
-          ),
-        ));
-  }
 
   Widget HeadersInfo() {
     return Row(children: [
-      SizedBox(width: ScreenSize(context).width / 30),
+      SizedBox(width: Logic.ScreenSize(context).width / 30),
       ExpandedSizedTextBox('שם'),
       ExpandedSizedTextBox('כתובת'),
       InkWell(
         child: ExpandedSizedTextBox('שכונה'),
-        onTap: () => sortColumn(sortByNeighbors),
+        onTap: () => sortColumn(Logic.sortByNeighbors),
       ),
       InkWell(
           child: ExpandedSizedTextBox('עיר'),
-          onTap: () => sortColumn(sortByCity)),
+          onTap: () => sortColumn(Logic.sortByCity)),
       ExpandedSizedTextBox('טלפון'),
       ExpandedSizedTextBox('תיאור'),
       InkWell(
           child: ExpandedSizedTextBox('תאריך'),
-          onTap: () => sortColumn(sortByDate)),
+          onTap: () => sortColumn(Logic.sortByDate)),
       ExpandedSizedTextBox('הערות'),
     ]);
   }
 
   Widget ItemInfo(int index) {
-    Item item = getProvider(true).itemList[index].item2;
+    Item item = Logic.getProvider(context,true).itemList[index].item2;
     Map info = {
       0: item.name,
       1: item.address,
@@ -317,11 +276,11 @@ class _MyHomePageState extends State<MyHomePage> {
       if (value.runtimeType == DateTime) {
         textBoxes.add(Expanded(
           child: SizedBox(
-              width: ScreenSize(context).width / 12,
-              height: ScreenSize(context).height / 20,
+              width: Logic.ScreenSize(context).width / 12,
+              height: Logic.ScreenSize(context).height / 20,
               child: Center(
                 child: Text(
-                  formatDate(value),
+                  Logic.formatDate(value),
                   overflow: TextOverflow.fade,
                   softWrap: false,
                 ),
@@ -330,8 +289,8 @@ class _MyHomePageState extends State<MyHomePage> {
       } else {
         textBoxes.add(Expanded(
           child: SizedBox(
-              width: ScreenSize(context).width / 12,
-              height: ScreenSize(context).height / 20,
+              width: Logic.ScreenSize(context).width / 12,
+              height: Logic.ScreenSize(context).height / 20,
               child: Center(
                 child: Tooltip(
                   textStyle: TextStyle(fontSize: 14),
@@ -350,78 +309,20 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     textBoxes.insert(0, Builder(builder: (newContext) {
       return Switch(
-          value: getProvider(true).itemList[index].item1,
+          value: Logic.getProvider(newContext,true).itemList[index].item1,
           onChanged: (value) {
-            getProvider(false).SelectItemAt(index);
+            Logic.getProvider(context,false).SelectItemAt(index);
           });
     }));
     return Row(children: textBoxes);
   }
 
-  Widget SelectedItemInfo(Item item, idx, bool draggable) {
-    Map info = {
-      0: item.name,
-      1: item.address,
-      2: item.neighborhood,
-      3: item.city,
-      4: item.phone,
-      5: item.description,
-      6: item.date,
-      7: item.comments,
-    };
-    List<Widget> textBoxes = [];
-    info.forEach((key, value) {
-      if (value.runtimeType == DateTime) {
-        textBoxes.add(Expanded(
-          child: SizedBox(
-              width: ScreenSize(context).width / 12,
-              height: ScreenSize(context).height / 20,
-              child: Center(
-                child: Text(
-                  formatDate(value),
-                  overflow: TextOverflow.fade,
-                  softWrap: false,
-                ),
-              )),
-        ));
-      } else {
-        textBoxes.add(Expanded(
-          child: SizedBox(
-              width: ScreenSize(context).width / 12,
-              height: ScreenSize(context).height / 20,
-              child: Center(
-                child: Tooltip(
-                  textStyle: TextStyle(fontSize: 14),
-                  decoration:
-                      BoxDecoration(color: Color.fromARGB(255, 200, 200, 200)),
-                  message: value,
-                  child: Text(
-                    value,
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                  ),
-                ),
-              )),
-        ));
-      }
-    });
-    if (draggable) {
-      textBoxes.insert(
-          0,
-          ReorderableDragStartListener(
-              index: idx, child: const Icon(Icons.drag_handle)));
-    } else {
-      textBoxes.insert(0, SelectTimeBtn(idx));
-    }
-    return Directionality(
-        textDirection: TextDirection.rtl, child: Row(children: textBoxes));
-  }
 
   Widget MyMap() {
     return Expanded(
       child: SizedBox(
-          height: ScreenSize(context).height,
-          width: ScreenSize(context).width / 3,
+          height: Logic.ScreenSize(context).height,
+          width: Logic.ScreenSize(context).width / 3,
           child: Center(child: Text('אני מפה'))),
     );
   }
@@ -432,8 +333,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget SizedTextBox(text) {
     return SizedBox(
-        width: ScreenSize(context).width / 12,
-        height: ScreenSize(context).height / 20,
+        width: Logic.ScreenSize(context).width / 12,
+        height: Logic.ScreenSize(context).height / 20,
         child: Center(
             child: Text(
           text,
@@ -443,126 +344,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   sortColumn(sort) {
     _isAscending = !_isAscending;
-    getProvider(false).Sort(sort, _isAscending);
-  }
-
-  sortByNeighbors(a, b) {
-    return a.neighborhood.compareTo(b.neighborhood);
-  }
-
-  sortByCity(a, b) {
-    return a.city.compareTo(b.city);
-  }
-
-  sortByDate(a, b) {
-    return a.date.compareTo(b.date);
-  }
-
-  String formatDate(DateTime date) {
-    return date.day.toString() +
-        '/' +
-        date.month.toString() +
-        '/' +
-        date.year.toString();
-  }
-
-  void ShowRouteDialog() {
-    if (getProvider(false).isSelectedEmpty()) {
-      showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-              title: Text('לא בחרת מוצרים',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.red))));
-    } else {
-      showDialog(
-          context: context,
-          builder: (_) => Directionality(
-                textDirection: TextDirection.rtl,
-                child: Dialog(child: RouteDialogContent()),
-              ));
-    }
-  }
-
-  Widget RouteDialogContent() {
-    return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SelectedItemList(false),
-          Container(
-              margin: EdgeInsets.all(20),
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [SizedBox(), SubmitBtn()]))
-        ]);
-  }
-
-  Widget SelectTimeBtn(int idx) {
-    List<String> options = [];
-    String time = getProvider(true).selectedItems[idx].pickupTime;
-    for (int h = 8; h <= 18; h++) {
-      for (int m = 0; m < 60; m += 15) {
-        String minutes = m == 0 ? '00' : m.toString();
-        String hours = (h / 10 == 0) ? '0' + h.toString() : h.toString();
-        options.add('$hours:$minutes');
-      }
-    }
-    return Container(
-      height: ScreenSize(context).height / 21,
-      width: ScreenSize(context).width / 15,
-      margin: EdgeInsets.only(bottom: 8),
-      child: DropdownButtonFormField(
-        alignment: Alignment.center,
-        value: time.isEmpty ? null : getProvider(true).selectedItems[idx].pickupTime,
-        items: options.map((String time) {
-          return DropdownMenuItem<String>(
-            value: time,
-            child: Text(time),
-          );
-        }).toList(),
-        hint: Text('בחירת שעה', style: TextStyle(color: Colors.pinkAccent)),
-        onChanged: (String? value) {
-          setState(() {
-            getProvider(false).changePickupTimeAt(idx, value!);
-          });
-        },
-      ),
-    );
-  }
-
-  Widget SubmitBtn() {
-    return FloatingActionButton(
-        onPressed: () async {
-          final status = await SendRoute();
-          if (status == RouteDialogStatus.success) {
-            Navigator.of(context).pop();
-            ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text('המסלול הועלה לשרת!')));
-          } else if (status == RouteDialogStatus.noPickupTime) {
-            showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                    title: Text('יש לבחור שעת איסוף לכל המוצרים',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.red))));
-          } else if (status == RouteDialogStatus.badDate) {
-            showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                    title: Text('התאריך שנבחר אינו חוקי',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.red))));
-          } else {
-            showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                    title: Text('סדר השעות שנבחרו אינו חוקי',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.red))));
-          }
-        },
-        child: Icon(Icons.send));
+    Logic.getProvider(context,false).Sort(sort, _isAscending);
   }
 
   Widget DateBtn() {
@@ -570,10 +352,9 @@ class _MyHomePageState extends State<MyHomePage> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(height: 10),
-        Text('התאריך שנבחר'),
         Container(
-            height: ScreenSize(context).height / 21,
-            width: ScreenSize(context).width / 15,
+            height: Logic.ScreenSize(context).height / 21,
+            width: Logic.ScreenSize(context).width / 15,
             child: TextFormField(
                 readOnly: true,
                 textAlign: TextAlign.center,
@@ -589,49 +370,12 @@ class _MyHomePageState extends State<MyHomePage> {
                   lastDate: DateTime.now().add(Duration(days: 365)));
               setState(() {
                 selectedDate = date!;
-                ctrl.text = formatDate(selectedDate);
-                getProvider(false).loadNewRoute(date);
+                ctrl.text = Logic.formatDate(selectedDate);
+                Logic.getProvider(context,false).loadNewRoute(date);
               });
             },
             child: Text('שינוי התאריך')),
       ],
     );
-  }
-
-  Future<RouteDialogStatus> SendRoute() async {
-    if (getProvider(true).selectedItems.any((element) => element.pickupTime == '')) {
-      return RouteDialogStatus.noPickupTime;
-    } else if (compareDates(selectedDate, DateTime.now()) < 0) {
-      return RouteDialogStatus.badDate;
-    } else if (!areTimesLegal(getProvider(true).selectedItems)) {
-      return RouteDialogStatus.badTimes;
-    }
-    await DB.ItemService()
-        .addRouteByItemList(getProvider(true).selectedItems, selectedDate);
-    return RouteDialogStatus.success;
-  }
-
-  int compareDates(DateTime d1, DateTime d2) {
-    if (d1.compareTo(d2) == 0 ||
-        (d1.year == d2.year && d1.month == d2.month && d1.day == d2.day)) {
-      return 0;
-    }
-    return d1.compareTo(d2);
-  }
-
-  bool areTimesLegal(List<PickupPoint> list) {
-    for (int i = 0; i < list.length - 1; i++) {
-      String t1 = list[i].pickupTime, t2 = list[i + 1].pickupTime;
-      final h1 = int.parse(t1.split(':')[0]), m1 = int.parse(t1.split(':')[1]);
-      final h2 = int.parse(t2.split(':')[0]), m2 = int.parse(t2.split(':')[1]);
-      if (h1 > h2 || (h1 == h2 && m1 > m2)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  ItemListProvider getProvider(bool listen) {
-    return Provider.of<ItemListProvider>(context, listen: listen);
   }
 }
