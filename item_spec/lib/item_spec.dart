@@ -60,8 +60,8 @@ class Item {
     return Item(
         id: id,
         address: json.getNotNull('address'),
-        floor: json.getNotNull('floor'),
-        apartment: json.getNotNull('apartment'),
+        floor: json.getNotNull('floor').toString(),
+        apartment: json.getNotNull('apartment').toString(),
         neighborhood: json.getNotNull('neighborhood'),
         // category: json.getNotNull('category'),
         city: json.getNotNull('city'),
