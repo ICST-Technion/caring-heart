@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'package:driver_interface/pickup_card.dart';
 import 'package:expandable/expandable.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -146,7 +147,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   ItemList(List<PickupPoint> items) {
     return ListView(
-      children: items.map(ItemCard).toList(),
+      children: items
+          .map((pp) => PickupCard(
+              pickupPoint: pp, functionality: PickupCardFunctionality.log()))
+          .toList(),
     );
   }
 
