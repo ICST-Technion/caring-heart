@@ -1,7 +1,7 @@
 const functions = require("firebase-functions");
 const { google } = require("googleapis");
 const sheets = google.sheets("v4");
-const { constants } = require("./constants")
+const { constants } = require("./constants");
 
 
 const FORMAT_FIELDS = {

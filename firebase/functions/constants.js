@@ -1,4 +1,4 @@
-const constants = {
+exports.constants = {
     KEY_COL_IDX: 1,
     FIRST_COL_IDX: 2,
     // LAST_COL_IDX: 14,
