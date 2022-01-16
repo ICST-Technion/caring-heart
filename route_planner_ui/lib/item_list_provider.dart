@@ -33,6 +33,10 @@ class ItemListProvider with ChangeNotifier {
     return selectedItems.isEmpty;
   }
 
+  bool isThereEmptyPickupTime() {
+    return selectedItems.any((element) => element.pickupTime == '');
+  }
+
   void loadNewRoute(DateTime date) async {
     isLoading = true;
     notifyListeners();
