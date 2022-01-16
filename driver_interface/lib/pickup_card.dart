@@ -34,16 +34,16 @@ class PickupCardFunctionality {
   factory PickupCardFunctionality.log({logger = print}) {
     return PickupCardFunctionality.custom(
       onAccept: (e) async {
-        logger('accept $e');
+        logger('accept ${e.item}');
       },
       onReject: (e) async {
-        logger('reject $e');
+        logger('reject ${e.item}');
       },
       onCallButton: (e) async {
-        logger('call $e');
+        logger('call ${e.item}');
       },
       onNavigateButton: (e) async {
-        logger('navigate $e');
+        logger('navigate ${e.item}');
       },
     );
   }
@@ -96,10 +96,10 @@ class _PickupCardState extends State<PickupCard> {
   }
 
   Row ItemStuff(PickupPoint item) {
-    final category = item.item.category;
+    final description = item.item.description;
     return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
       pickupInfo(item),
-      Text(category, style: const TextStyle(fontSize: 18)),
+      Text(description, style: const TextStyle(fontSize: 18)),
       itemButtons(item)
     ]);
   }
@@ -160,7 +160,7 @@ class _PickupCardState extends State<PickupCard> {
           const VerticalDivider(width: 1),
           Expanded(
             child: TextButton(
-                onPressed: () => () => widget.functionality.onReject(item),
+                onPressed: () => widget.functionality.onReject(item),
                 child: const Text('ביטול',
                     style: TextStyle(color: Colors.red, fontSize: 18)),
                 style: ButtonStyle(
