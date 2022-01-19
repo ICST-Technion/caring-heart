@@ -27,14 +27,23 @@ class ItemService {
   }
 
   Future<void> addRouteByItemList(List<PickupPoint> list, DateTime date) async {
-    final ref = FirebaseFirestore.instance.collection('routesTest');
-    ref.add({
-      'date': formatDate(date),
-      'items': list
-          .map(
-              (pickup) => {'itemID': pickup.item.id, 'time': pickup.pickupTime})
-          .toList()
-    });
+    bool found = false;
+    //check if a route already exists, and if so, update it
+    var ref = FirebaseFirestore.instance.collection('routesTest');
+    var snapshot = await ref.where('date', isEqualTo: formatDate(date)).get();
+    if (snapshot.docs.isNotEmpty) {
+      await snapshot.docs[0].reference.set({'items': list.map((pickup) =>
+      {'itemID': pickup.item.id, 'time': pickup.pickupTime}).toList()});
+      found = true;
+    }
+    //if no doc was found, add a new one
+    if (!found) {
+      ref.add({
+        'date': formatDate(date),
+        'items': list.map((pickup) =>
+        {'itemID': pickup.item.id, 'time': pickup.pickupTime}).toList()
+      });
+    }
   }
 
   formatDate(DateTime date) {
