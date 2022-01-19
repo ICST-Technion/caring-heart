@@ -37,29 +37,31 @@ class Item {
   // final String pickupTime;
   final String phone;
 
-  Item({required this.address,
-    required this.floor,
-    required this.apartment,
-    required this.neighborhood,
-    required this.city,
-    required this.comments,
-    required this.date,
-    required this.description,
-    required this.email,
-    required this.isChecked,
-    required this.isCollected,
-    required this.name,
-    required this.id,
-    // required this.pickupTime,
-    required this.phone});
+  Item(
+      {required this.address,
+      required this.floor,
+      required this.apartment,
+      required this.neighborhood,
+      // required this.category,
+      required this.city,
+      required this.comments,
+      required this.date,
+      required this.description,
+      required this.email,
+      required this.isChecked,
+      required this.isCollected,
+      required this.name,
+      required this.id,
+      // required this.pickupTime,
+      required this.phone});
 
   factory Item.fromJson(String id, Map<String, dynamic> json) {
-    json = _tempBridgeToNewFirebase(json);
+    // json = _tempBridgeToNewFirebase(json);
     return Item(
         id: id,
         address: json.getNotNull('address'),
-        floor: json.getNotNull('floor'),
-        apartment: json.getNotNull('apartment'),
+        floor: json.getNotNull('floor').toString(),
+        apartment: json.getNotNull('apartment').toString(),
         neighborhood: json.getNotNull('neighborhood'),
         city: json.getNotNull('city'),
         comments: json.getNotNull('comments'),
