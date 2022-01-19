@@ -263,24 +263,7 @@ class _MyHomePageState extends State<MyHomePage> {
             )),
       ));
     });
-    return Row(children: textBoxes);/*
-      SizedBox(width: Logic.ScreenSize(context).width / 30),
-      ExpandedSizedTextBox('שם'),
-      ExpandedSizedTextBox('כתובת'),
-      InkWell(
-        child: ExpandedSizedTextBox('שכונה'),
-        onTap: () => sortColumn(Logic.sortByNeighbors),
-      ),
-      InkWell(
-          child: ExpandedSizedTextBox('עיר'),
-          onTap: () => sortColumn(Logic.sortByCity)),
-      ExpandedSizedTextBox('טלפון'),
-      ExpandedSizedTextBox('תיאור'),
-      InkWell(
-          child: ExpandedSizedTextBox('תאריך'),
-          onTap: () => sortColumn(Logic.sortByDate)),
-      ExpandedSizedTextBox('הערות'),
-    ]);*/
+    return Row(children: textBoxes);
   }
 
   Widget ItemInfo(int index) {
