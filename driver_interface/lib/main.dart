@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
 import 'package:driver_interface/pickup_card.dart';
+import 'package:driver_interface/report_service.dart';
 import 'package:expandable/expandable.dart';
 import 'package:driver_interface/report_dialog.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -122,11 +123,12 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title, required this.itemList})
+  MyHomePage({Key? key, required this.title, required this.itemList})
       : super(key: key);
 
   final String title;
   final List<PickupPoint> itemList;
+  final ReportService fbReportService = getFirebaseReportService();
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -150,25 +152,34 @@ class _MyHomePageState extends State<MyHomePage> {
     return ListView(
       children: items
           .map((pp) => PickupCard(
-              pickupPoint: pp, functionality: PickupCardFunctionality.log()))
+              pickupPoint: pp,
+              functionality: PickupCardFunctionality.production(
+                  onAccept: AcceptItem, onReject: RejectItem)))
           .toList(),
     );
   }
 
-  AcceptItem(PickupPoint item) async {
-    await DB.ItemService().collectItem(item.item.id);
-    setState(() {
-      widget.itemList.remove(item);
-    });
+  Future<void> AcceptItem(PickupPoint item) async {
+    // await DB.ItemService().collectItem(item.item.id);
+    await showDialog(
+        context: context,
+        builder: (context) => ReportDialog(
+            pickupPoint: item,
+            type: ReportDialogType.collect(['שולחן', 'כסא'])));
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text('האיסוף הושלם'),
       duration: Duration(milliseconds: 1200),
     ));
+    return;
   }
 
-  RejectItem(PickupPoint item) {
-    setState(() {
-      widget.itemList.remove(item);
-    });
+  Future<void> RejectItem(PickupPoint item) async {
+    await showDialog(
+        context: context,
+        builder: (context) =>
+            ReportDialog(pickupPoint: item, type: ReportDialogType.cancel()));
+    // setState(() {
+    //   widget.itemList.remove(item);
+    // });
   }
 }
