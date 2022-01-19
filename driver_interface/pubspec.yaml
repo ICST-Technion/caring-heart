@@ -41,6 +41,7 @@ dependencies:
   # Custom packages
   item_spec:
     path: ../item_spec
+  expandable: ^5.0.1
 
 dev_dependencies:
   flutter_test:
