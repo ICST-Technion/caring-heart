@@ -50,6 +50,7 @@ class App extends StatelessWidget {
 
   Widget InitScreen() {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
         body: Center(
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -154,7 +155,6 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -186,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 }),
             body: SingleChildScrollView(
               child: Column(children: [
-                Logic.getProvider(context,true).isLoading
+                Logic.getProvider(context, true).isLoading
                     ? LinearProgressIndicator(minHeight: 9)
                     : SizedBox(),
                 DateBtn(),
@@ -217,13 +217,12 @@ class _MyHomePageState extends State<MyHomePage> {
           height: Logic.ScreenSize(context).height / 2.6,
           child: ListView.builder(
               shrinkWrap: true,
-              itemCount: Logic.getProvider(context,true).itemList.length,
+              itemCount: Logic.getProvider(context, true).itemList.length,
               itemBuilder: (context, idx) => getItem(context, idx)),
         ),
       ],
     );
   }
-
 
   Widget getItem(context, idx) {
     return Card(
@@ -237,9 +236,34 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-
   Widget HeadersInfo() {
-    return Row(children: [
+    List titles = [
+      'שם',
+      'כתובת',
+      'שכונה',
+      'עיר',
+      'טלפון',
+      'תיאור',
+      'תאריך',
+      'הערות'
+    ];
+    List<Widget> textBoxes = [SizedBox(width: Logic.ScreenSize(context).width / 30)];
+    titles.forEach((element) {
+      textBoxes.add(Expanded(
+        child: SizedBox(
+            width: Logic.ScreenSize(context).width / 12,
+            height: Logic.ScreenSize(context).height / 20,
+            child: Center(
+              child: Text(
+                element,
+                overflow: TextOverflow.fade,
+                softWrap: false,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            )),
+      ));
+    });
+    return Row(children: textBoxes);/*
       SizedBox(width: Logic.ScreenSize(context).width / 30),
       ExpandedSizedTextBox('שם'),
       ExpandedSizedTextBox('כתובת'),
@@ -256,11 +280,11 @@ class _MyHomePageState extends State<MyHomePage> {
           child: ExpandedSizedTextBox('תאריך'),
           onTap: () => sortColumn(Logic.sortByDate)),
       ExpandedSizedTextBox('הערות'),
-    ]);
+    ]);*/
   }
 
   Widget ItemInfo(int index) {
-    Item item = Logic.getProvider(context,true).itemList[index].item2;
+    Item item = Logic.getProvider(context, true).itemList[index].item2;
     Map info = {
       0: item.name,
       1: item.address,
@@ -309,14 +333,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
     textBoxes.insert(0, Builder(builder: (newContext) {
       return Switch(
-          value: Logic.getProvider(newContext,true).itemList[index].item1,
+          value: Logic.getProvider(newContext, true).itemList[index].item1,
           onChanged: (value) {
-            Logic.getProvider(context,false).SelectItemAt(index);
+            Logic.getProvider(context, false).SelectItemAt(index);
           });
     }));
     return Row(children: textBoxes);
   }
-
 
   Widget MyMap() {
     return Expanded(
@@ -328,7 +351,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   ExpandedSizedTextBox(text) {
-    return Flexible(child: SizedTextBox(text));
+    return Expanded(child: SizedTextBox(text));
   }
 
   Widget SizedTextBox(text) {
@@ -339,12 +362,14 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Text(
           text,
           style: TextStyle(fontWeight: FontWeight.bold),
+          overflow: TextOverflow.fade,
+          softWrap: false,
         )));
   }
 
   sortColumn(sort) {
     _isAscending = !_isAscending;
-    Logic.getProvider(context,false).Sort(sort, _isAscending);
+    Logic.getProvider(context, false).Sort(sort, _isAscending);
   }
 
   Widget DateBtn() {
@@ -371,7 +396,7 @@ class _MyHomePageState extends State<MyHomePage> {
               setState(() {
                 selectedDate = date!;
                 ctrl.text = Logic.formatDate(selectedDate);
-                Logic.getProvider(context,false).loadNewRoute(date);
+                Logic.getProvider(context, false).loadNewRoute(date);
               });
             },
             child: Text('שינוי התאריך')),
