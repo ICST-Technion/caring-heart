@@ -2,6 +2,7 @@
 
 import 'package:driver_interface/pickup_card.dart';
 import 'package:expandable/expandable.dart';
+import 'package:driver_interface/report_dialog.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:item_spec/pickup_point.dart';
