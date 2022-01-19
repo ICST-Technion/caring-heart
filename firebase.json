@@ -1,0 +1,16 @@
+{
+  "hosting": [
+  {
+	"target": "routePlanner",
+    "public": "route_planner_ui/build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  },
+  {
+	"target": "drivers",
+    "public": "driver_interface/build/web"
+  }]
+}
