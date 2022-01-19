@@ -1,5 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'package:driver_interface/pickup_card.dart';
+import 'package:expandable/expandable.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:item_spec/pickup_point.dart';
@@ -139,144 +141,16 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(widget.title),
         ),
         body: Center(child: ItemList(widget.itemList)),
-        bottomNavigationBar: BottomNavBar(),
       ),
-    );
-  }
-
-  BottomNavBar() {
-    return BottomNavigationBar(
-      currentIndex: 0, // this will be set when a new tab is tapped
-      items: [
-        BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today_outlined), label: 'מסלול יומי'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_view_week), label: 'מסלולים שבועיים'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.more_horiz), label: 'פריטים שנאספו')
-      ],
     );
   }
 
   ItemList(List<PickupPoint> items) {
-    return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, int index) {
-        if (index == 0) {
-          return TopItem(items[index]);
-        }
-        return ListItem(items[index]);
-      },
-    );
-  }
-
-  TopItem(PickupPoint item) {
-    return Card(
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        elevation: 4,
-        child: Center(
-          child: Column(
-            children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: ItemStuff(item),
-              ),
-              const Divider(height: 1),
-              AcceptOrReject(item)
-            ],
-          ),
-        ));
-  }
-
-  ListItem(PickupPoint item) {
-    return Card(
-        margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        elevation: 4,
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            child: ItemStuff(item),
-          ),
-        ));
-  }
-
-  Row ItemStuff(PickupPoint item) {
-    final description = item.item.description;
-    return Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      pickupInfo(item),
-      Text(description, style: const TextStyle(fontSize: 18)),
-      itemButtons(item.item)
-    ]);
-  }
-
-  pickupInfo(PickupPoint item) {
-    final address = item.item.address;
-    final time = item.pickupTime;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Text(address, style: const TextStyle(fontSize: 20)),
-            Text(time, style: const TextStyle(fontSize: 16))
-          ],
-        )
-      ],
-    );
-  }
-
-  itemButtons(Item item) {
-    final phone = item.phone;
-    final address = item.address;
-    return Column(
-      children: [
-        IconButton(
-            splashRadius: 24,
-            onPressed: () => launch('tel:$phone'),
-            icon: const Icon(Icons.phone, color: Colors.green)),
-        IconButton(
-            splashRadius: 24,
-            onPressed: () => launch('https://waze.com/ul?q=$address'),
-            icon: const Icon(Icons.map, color: Colors.blue))
-      ],
-    );
-  }
-
-  AcceptOrReject(PickupPoint item) {
-    return IntrinsicHeight(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Expanded(
-            child: TextButton(
-                onPressed: () async {
-                  await AcceptItem(item);
-                },
-                child: const Text(
-                  'אישור',
-                  style: TextStyle(color: Colors.green, fontSize: 18),
-                ),
-                style: ButtonStyle(
-                  padding: MaterialStateProperty.all<EdgeInsets>(
-                      const EdgeInsets.symmetric(vertical: 15)),
-                  overlayColor: MaterialStateProperty.all<Color>(
-                      Colors.green.withAlpha(20)),
-                )),
-          ),
-          const VerticalDivider(width: 1),
-          Expanded(
-            child: TextButton(
-                onPressed: () => RejectItem(item),
-                child: const Text('ביטול',
-                    style: TextStyle(color: Colors.red, fontSize: 18)),
-                style: ButtonStyle(
-                    padding: MaterialStateProperty.all<EdgeInsets>(
-                        const EdgeInsets.symmetric(vertical: 15)))),
-          ),
-        ],
-      ),
+    return ListView(
+      children: items
+          .map((pp) => PickupCard(
+              pickupPoint: pp, functionality: PickupCardFunctionality.log()))
+          .toList(),
     );
   }
 
