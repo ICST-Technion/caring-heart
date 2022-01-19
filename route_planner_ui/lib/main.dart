@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -170,40 +169,36 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget RoutePlanner() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        SizedBox(
-          width: Logic.ScreenSize(context).width,
-          height: Logic.ScreenSize(context).height,
-          child: Scaffold(
-            floatingActionButton: FloatingActionButton(
-                tooltip: 'שליחה',
-                child: Icon(Icons.send),
-                onPressed: () {
-                  RouteDialogFuncs(context: context, selectedDate: selectedDate)
-                      .ShowRouteDialog();
-                }),
-            body: SingleChildScrollView(
-              child: Column(children: [
-                Logic.getProvider(context, true).isLoading
-                    ? LinearProgressIndicator(minHeight: 9)
-                    : SizedBox(),
-                DateBtn(),
-                ItemList(),
-                Divider(thickness: 2),
-                Text(
-                  'המוצרים שבחרת:',
-                  style: TextStyle(fontSize: 20),
-                ),
-                Divider(thickness: 2),
-                SelectedList(context: context).SelectedItemList(true)
-              ]),
+    return SizedBox(
+      width: Logic.ScreenSize(context).width,
+      height: Logic.ScreenSize(context).height,
+      child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+            tooltip: 'שליחה',
+            child: Icon(Icons.send),
+            onPressed: () {
+              RouteDialogFuncs(context: context, selectedDate: selectedDate)
+                  .ShowRouteDialog();
+            }),
+        body: SingleChildScrollView(
+          child: Column(children: [
+            Logic.getProvider(context, true).isLoading
+                ? LinearProgressIndicator(minHeight: 9)
+                : SizedBox(),
+            DateBtn(),
+            ItemList(),
+            Divider(thickness: 2),
+            Text(
+              'המוצרים שבחרת:',
+              style: TextStyle(fontSize: 20),
             ),
-          ),
+            Divider(thickness: 2),
+            SelectedList(context: context).SelectedItemList(true),
+            Divider(thickness: 2),
+            MyMap()
+          ]),
         ),
-        //MyMap()
-      ],
+      ),
     );
   }
 
@@ -325,12 +320,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget MyMap() {
-    return Expanded(
-      child: SizedBox(
-          height: Logic.ScreenSize(context).height,
-          width: Logic.ScreenSize(context).width / 3,
-          child: Center(child: Text('אני מפה'))),
-    );
+    return SizedBox(
+        height: Logic.ScreenSize(context).height / 2,
+        width: Logic.ScreenSize(context).width,
+        child: Center(child: Container()));
   }
 
   ExpandedSizedTextBox(text) {

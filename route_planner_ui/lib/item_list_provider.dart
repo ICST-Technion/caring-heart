@@ -47,7 +47,6 @@ class ItemListProvider with ChangeNotifier {
             ? Tuple2(true, e.item2)
             : Tuple2(false, e.item2))
         .toList();
-    itemList.forEach((element) {print(element.item1);});
     isLoading = false;
     notifyListeners();
   }
