@@ -3,8 +3,11 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_login/flutter_login.dart';
 import 'package:item_spec/pickup_point.dart';
+import 'package:route_planner_ui/auth_service.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
 import 'package:route_planner_ui/selected_item_list.dart';
 import 'package:tuple/tuple.dart';
@@ -40,7 +43,7 @@ class App extends StatelessWidget {
           return ErrorScreen(snapshot.error.toString());
         }
         if (snapshot.connectionState == ConnectionState.done) {
-          return MyApp();
+          return Login();
         }
         return Center(child: InitScreen());
       },
@@ -72,9 +75,69 @@ class App extends StatelessWidget {
   }
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
+class Login extends StatefulWidget {
+  const Login({Key? key}) : super(key: key);
 
+  @override
+  _LoginState createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final _auth = MyAuth();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: _auth.isUserRemembered(),
+        builder: (context, AsyncSnapshot<bool?> snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (_auth.uid == null &&
+                (snapshot.data == null || !snapshot.data!)) {
+              return loginForm();
+            } else if (snapshot.data != null && snapshot.data!) {
+              return MyApp(auth: _auth);
+            }
+          }
+          return Center(child: CircularProgressIndicator());
+        });
+  }
+
+  Widget loginForm() {
+    return MaterialApp(
+      home: Builder(
+        builder: (context) {
+          return Center(
+              child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: FlutterLogin(
+              theme: LoginTheme(pageColorLight: Colors.lightBlueAccent),
+              onLogin: (LoginData data) =>
+                  _auth.signInWithEmailPassword(data.name, data.password),
+              onSubmitAnimationCompleted: () {
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (context) => MyApp(auth: _auth),
+                ));
+              },
+              hideForgotPasswordButton: true,
+              hideProvidersTitle: true,
+              onRecoverPassword: (String) {},
+              messages: LoginMessages(
+                  userHint: 'מייל',
+                  passwordHint: 'סיסמה',
+                  loginButton: 'התחברות',
+                  flushbarTitleError: 'שגיאה'),
+            ),
+          ));
+        }
+      ),
+    );
+  }
+}
+
+class MyApp extends StatelessWidget {
+  MyApp({Key? key, required this.auth}) : super(key: key);
+
+  MyAuth auth;
   final Future<List<Item>> _itemList = DB.ItemService().getCheckedItems();
 
   // This widget is the root of your application.
@@ -99,7 +162,7 @@ class MyApp extends StatelessWidget {
                 ),
                 debugShowCheckedModeBanner: false,
                 home:
-                    MyHomePage(title: 'תכנון מסלול', itemList: snapshot.data!),
+                    MyHomePage(title: 'תכנון מסלול', itemList: snapshot.data!, auth: auth),
               ),
             );
           }
@@ -132,12 +195,13 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   var isLoading = false;
 
-  MyHomePage({Key? key, required this.title, required this.itemList})
+  MyHomePage({Key? key, required this.title, required this.itemList, required this.auth})
       : super(key: key);
 
   final String title;
   final List<Item> itemList;
   List<PickupPoint> selectedItems = [];
+  MyAuth auth;
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -146,7 +210,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   bool _isAscending = true;
   DateTime selectedDate = DateTime.now();
-  TextEditingController ctrl = new TextEditingController();
+  TextEditingController ctrl = TextEditingController();
 
   @override
   void initState() {
@@ -163,9 +227,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   AppBar MyAppBar() {
-    return AppBar(
-      title: Center(child: Text(widget.title)),
-    );
+    if (!widget.auth.remember) {
+      return AppBar(title: Text(widget.title));
+    }
+    return AppBar(title: Text(widget.title), actions: [
+      IconButton(
+          onPressed: () async {
+            await widget.auth.signOut();
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => Login(),
+            ));
+          },
+          icon: Icon(Icons.logout))
+    ]);
   }
 
   Widget RoutePlanner() {
@@ -187,15 +261,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 : SizedBox(),
             DateBtn(),
             ItemList(),
-            Divider(thickness: 2),
             Text(
               'המוצרים שבחרת:',
               style: TextStyle(fontSize: 20),
             ),
-            Divider(thickness: 2),
+            Divider(thickness: 1),
             SelectedList(context: context).SelectedItemList(true),
-            Divider(thickness: 2),
-            MyMap()
+            //MyMap()
           ]),
         ),
       ),
@@ -206,14 +278,21 @@ class _MyHomePageState extends State<MyHomePage> {
     return Column(
       children: [
         Container(
-            child: getItem(context, -1), margin: EdgeInsets.only(top: 10)),
-        Container(
-          margin: EdgeInsets.only(top: 10),
-          height: Logic.ScreenSize(context).height / 2.6,
-          child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: Logic.getProvider(context, true).itemList.length,
-              itemBuilder: (context, idx) => getItem(context, idx)),
+            child: Card(
+                margin: EdgeInsets.symmetric(horizontal: 10),
+                child: getItem(context, -1)),
+            margin: EdgeInsets.only(top: 10)),
+        Card(
+          margin: EdgeInsets.all(10),
+          elevation: 4,
+          child: Container(
+            margin: EdgeInsets.only(top: 10),
+            height: Logic.ScreenSize(context).height / 2.6,
+            child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: Logic.getProvider(context, true).itemList.length,
+                itemBuilder: (context, idx) => getItem(context, idx)),
+          ),
         ),
       ],
     );
@@ -221,8 +300,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget getItem(context, idx) {
     return Card(
-        margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 20),
-        elevation: 3,
+        elevation: 0,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -242,7 +320,9 @@ class _MyHomePageState extends State<MyHomePage> {
       'תאריך',
       'הערות'
     ];
-    List<Widget> textBoxes = [SizedBox(width: Logic.ScreenSize(context).width / 30)];
+    List<Widget> textBoxes = [
+      SizedBox(width: Logic.ScreenSize(context).width / 30)
+    ];
     titles.forEach((element) {
       textBoxes.add(Expanded(
         child: SizedBox(
@@ -354,8 +434,8 @@ class _MyHomePageState extends State<MyHomePage> {
       children: [
         SizedBox(height: 10),
         Container(
-            height: Logic.ScreenSize(context).height / 21,
-            width: Logic.ScreenSize(context).width / 15,
+            height: Logic.ScreenSize(context).height / 15,
+            width: Logic.ScreenSize(context).width / 10,
             child: TextFormField(
                 readOnly: true,
                 textAlign: TextAlign.center,

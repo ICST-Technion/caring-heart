@@ -8,6 +8,14 @@ import 'package:provider/provider.dart';
 import 'item_list_provider.dart';
 
 class Logic {
+  static final List<String> _emails = [
+    "caringhearttech@gmail.com",
+    "levchash@levchash.co.il"
+  ];
+
+  static bool isEmailValid(String? email) {
+    return _emails.contains(email);
+  }
 
   static Size ScreenSize(context) {
     return MediaQuery.of(context).size;
