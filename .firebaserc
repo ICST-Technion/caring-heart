@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "caring-heart-aa1c1"
+  },
+  "targets": {
+    "caring-heart-aa1c1": {
+      "hosting": {
+        "routePlanner": [
+          "route-plan"
+        ],
+        "drivers": [
+          "pick-up"
+        ]
+      }
+    }
+  }
+}

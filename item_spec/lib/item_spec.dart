@@ -13,7 +13,7 @@ Map<String, dynamic> _tempBridgeToNewFirebase(
   final Map<String, dynamic> res = Map.from(oldFirebaseItem);
 
   // arbitrary values that are a function of the old item
-  final floor = (res['name'] as String).length % 5;
+  final floor = 1; //(res['name'] as String).length % 5;
   res['floor'] = '$floor';
   res['apartment'] = '${floor + 1}';
   return res;
@@ -24,7 +24,6 @@ class Item {
   final String floor;
   final String apartment;
   final String neighborhood;
-  final String category;
   final String city;
   final String comments;
   final DateTime date;
@@ -34,6 +33,7 @@ class Item {
   final bool isCollected;
   final String name;
   final String id;
+
   // final String pickupTime;
   final String phone;
 
@@ -42,7 +42,7 @@ class Item {
       required this.floor,
       required this.apartment,
       required this.neighborhood,
-      required this.category,
+      // required this.category,
       required this.city,
       required this.comments,
       required this.date,
@@ -56,14 +56,13 @@ class Item {
       required this.phone});
 
   factory Item.fromJson(String id, Map<String, dynamic> json) {
-    json = _tempBridgeToNewFirebase(json);
+    // json = _tempBridgeToNewFirebase(json);
     return Item(
         id: id,
         address: json.getNotNull('address'),
-        floor: json.getNotNull('floor'),
-        apartment: json.getNotNull('apartment'),
+        floor: json.getNotNull('floor').toString(),
+        apartment: json.getNotNull('apartment').toString(),
         neighborhood: json.getNotNull('neighborhood'),
-        category: json.getNotNull('category'),
         city: json.getNotNull('city'),
         comments: json.getNotNull('comments'),
         date: json.getNotNull('date').toDate(),
@@ -75,4 +74,5 @@ class Item {
         // pickupTime: time,
         phone: json.getNotNull('phone').toString());
   }
+
 }

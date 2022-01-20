@@ -43,6 +43,7 @@ dependencies:
   # Custom packages
   item_spec:
     path: ../item_spec
+  flutter_map: ^0.14.0
 
 dev_dependencies:
   flutter_test:
