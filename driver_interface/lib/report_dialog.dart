@@ -112,7 +112,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 }
 
                 await widget.reportService.setReport(report);
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(true);
               },
               child: const Text('אשר'))
         ],

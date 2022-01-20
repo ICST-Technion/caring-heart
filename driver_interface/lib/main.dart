@@ -124,10 +124,13 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key? key, required this.title, required this.itemList})
-      : super(key: key);
+      : super(key: key){
+        activeItemsMap = { for (var item in itemList) item : true };
+      }
 
   final String title;
   final List<PickupPoint> itemList;
+  late final Map<PickupPoint, bool> activeItemsMap;
   final ReportService fbReportService = getFirebaseReportService();
 
   @override
@@ -154,32 +157,47 @@ class _MyHomePageState extends State<MyHomePage> {
           .map((pp) => PickupCard(
               pickupPoint: pp,
               functionality: PickupCardFunctionality.production(
-                  onAccept: AcceptItem, onReject: RejectItem)))
+                  onAccept: acceptItem, onReject: rejectItem)))
           .toList(),
     );
   }
 
-  Future<void> AcceptItem(PickupPoint item) async {
+  Future<void> acceptItem(PickupPoint item) async {
     // await DB.ItemService().collectItem(item.item.id);
-    await showDialog(
+    bool? rejected = await showDialog(
         context: context,
         builder: (context) => ReportDialog(
             pickupPoint: item,
             type: ReportDialogType.collect(['שולחן', 'כסא'])));
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('האיסוף הושלם'),
-      duration: Duration(milliseconds: 1200),
-    ));
+    
+    if (rejected ==  true){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('האיסוף הושלם'),
+        duration: Duration(milliseconds: 1200),
+      ));
+      widget.activeItemsMap[item] = false;
+    }
     return;
   }
 
-  Future<void> RejectItem(PickupPoint item) async {
-    await showDialog(
-        context: context,
-        builder: (context) =>
-            ReportDialog(pickupPoint: item, type: ReportDialogType.cancel()));
+  Future<void> rejectItem(PickupPoint item) async {
+    bool? rejected = await showDialog(
+      context: context,
+      builder: (context) =>
+        ReportDialog(pickupPoint: item, type: ReportDialogType.cancel()
+      )
+    );
+    
+    if (rejected ==  true){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('האיסוף בוטל'),
+        duration: Duration(milliseconds: 1200),
+      ));
+      widget.activeItemsMap[item] = false;
+    }
     // setState(() {
     //   widget.itemList.remove(item);
     // });
   }
+    
 }
