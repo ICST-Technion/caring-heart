@@ -160,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onAccept: acceptItem, onReject: rejectItem)))
           .toList();
 
-    List<Widget> InactiveList = items.where((pp) => activeItemsMap[pp] == false).map((pp) => InactiveCard(pickupPoint: pp,)).toList();
+    List<Widget> InactiveList = items.where((pp) => activeItemsMap[pp] == false).map((pp) => InactiveCard(pickupPoint: pp,activateFunc: activateItem,)).toList();
     return ListView(
       children: [...PickupCardsList, ...InactiveList]
     );
