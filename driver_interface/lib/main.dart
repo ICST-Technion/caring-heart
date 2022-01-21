@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
 import 'package:driver_interface/pickup_card.dart';
+import 'package:driver_interface/unactive_card.dart';
 import 'package:driver_interface/report_service.dart';
 import 'package:expandable/expandable.dart';
 import 'package:driver_interface/report_dialog.dart';
@@ -130,7 +131,7 @@ class MyHomePage extends StatefulWidget {
 
   final String title;
   final List<PickupPoint> itemList;
-  late final Map<PickupPoint, bool> activeItemsMap;
+  Map<PickupPoint, bool> activeItemsMap = Map<PickupPoint, bool>();
   final ReportService fbReportService = getFirebaseReportService();
 
   @override
@@ -146,21 +147,25 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text(widget.title),
         ),
-        body: Center(child: ItemList(widget.itemList)),
+        body: Center(child: ItemList(widget.itemList, widget.activeItemsMap)),
       ),
     );
   }
 
-  ItemList(List<PickupPoint> items) {
-    return ListView(
-      children: items
-          .map((pp) => PickupCard(
+  ItemList(List<PickupPoint> items, Map<PickupPoint, bool> activeItemsMap) {
+    List<Widget> PickupCardsList =  items
+          .where((pp) => activeItemsMap[pp] == true).map((pp) => PickupCard(
               pickupPoint: pp,
               functionality: PickupCardFunctionality.production(
                   onAccept: acceptItem, onReject: rejectItem)))
-          .toList(),
+          .toList();
+
+    List<Widget> UnactiveList = items.where((pp) => activeItemsMap[pp] == false).map((pp) => UnactiveCard(pickupPoint: pp,)).toList();
+    return ListView(
+      children: [...PickupCardsList, ...UnactiveList]
     );
   }
+
 
   Future<void> acceptItem(PickupPoint item) async {
     // await DB.ItemService().collectItem(item.item.id);
@@ -175,7 +180,9 @@ class _MyHomePageState extends State<MyHomePage> {
         content: Text('האיסוף הושלם'),
         duration: Duration(milliseconds: 1200),
       ));
-      widget.activeItemsMap[item] = false;
+      setState(() {
+        widget.activeItemsMap[item] = false;
+      });
     }
     return;
   }
@@ -193,11 +200,9 @@ class _MyHomePageState extends State<MyHomePage> {
         content: Text('האיסוף בוטל'),
         duration: Duration(milliseconds: 1200),
       ));
-      widget.activeItemsMap[item] = false;
+      setState(() {
+        widget.activeItemsMap[item] = false;
+      });
     }
-    // setState(() {
-    //   widget.itemList.remove(item);
-    // });
   }
-    
 }
