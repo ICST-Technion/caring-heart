@@ -1,7 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
 import 'package:driver_interface/pickup_card.dart';
-import 'package:driver_interface/unactive_card.dart';
+import 'package:driver_interface/inactive_card.dart';
 import 'package:driver_interface/report_service.dart';
 import 'package:expandable/expandable.dart';
 import 'package:driver_interface/report_dialog.dart';
@@ -160,12 +160,18 @@ class _MyHomePageState extends State<MyHomePage> {
                   onAccept: acceptItem, onReject: rejectItem)))
           .toList();
 
-    List<Widget> UnactiveList = items.where((pp) => activeItemsMap[pp] == false).map((pp) => UnactiveCard(pickupPoint: pp,)).toList();
+    List<Widget> InactiveList = items.where((pp) => activeItemsMap[pp] == false).map((pp) => InactiveCard(pickupPoint: pp,)).toList();
     return ListView(
-      children: [...PickupCardsList, ...UnactiveList]
+      children: [...PickupCardsList, ...InactiveList]
     );
   }
 
+  Future<void> activateItem(PickupPoint item) async{
+    setState(() {
+      widget.activeItemsMap[item] = true;
+    });
+    
+  }
 
   Future<void> acceptItem(PickupPoint item) async {
     // await DB.ItemService().collectItem(item.item.id);

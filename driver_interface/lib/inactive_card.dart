@@ -7,15 +7,15 @@ import 'package:item_spec/item_spec.dart';
 import 'package:item_spec/pickup_point.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class UnactiveCard extends StatefulWidget {
-  const UnactiveCard({ Key? key, required this.pickupPoint }) : super(key: key);
+class InactiveCard extends StatefulWidget {
+  const InactiveCard({ Key? key, required this.pickupPoint }) : super(key: key);
   final PickupPoint pickupPoint;
 
   @override
-  _UnactiveCardState createState() => _UnactiveCardState();
+  _InactiveCardState createState() => _InactiveCardState();
 }
 
-class _UnactiveCardState extends State<UnactiveCard> {
+class _InactiveCardState extends State<InactiveCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
