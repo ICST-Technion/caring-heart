@@ -8,7 +8,8 @@ import 'package:item_spec/pickup_point.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class InactiveCard extends StatefulWidget {
-  const InactiveCard({ Key? key, required this.pickupPoint, required this.activateFunc}) : super(key: key);
+  const InactiveCard({ Key? key, required this.pickupPoint, required this.activateFunc, required this.status} ) : super(key: key);
+  final PickupReportStatus status;
   final PickupPoint pickupPoint;
   final Future<void> Function(PickupPoint) activateFunc;
 
@@ -23,7 +24,7 @@ class _InactiveCardState extends State<InactiveCard>{
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       child:  ListItem(widget.pickupPoint), 
       // elevation: 0,
-      color: Colors.grey[300]
+      color: (widget.status == PickupReportStatus.collected) ? Colors.green[50] : Colors.red[50] 
       );
   }
 
@@ -42,9 +43,8 @@ class _InactiveCardState extends State<InactiveCard>{
       // Text(description, style: const TextStyle(fontSize: 18)),
       TextButton(
         child: Text("החזר מוצר לרשימה"),
-        onPressed: () => widget.activateFunc(item)
-
-        )
+        onPressed: () => widget.activateFunc(item),
+      )
     ]);
   }
 

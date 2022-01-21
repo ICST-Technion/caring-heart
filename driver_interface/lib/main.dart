@@ -126,12 +126,12 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key? key, required this.title, required this.itemList})
       : super(key: key){
-        activeItemsMap = { for (var item in itemList) item : true };
+        activeItemsMap = { for (var item in itemList) item : PickupReportStatus.uncollected};
       }
 
   final String title;
   final List<PickupPoint> itemList;
-  Map<PickupPoint, bool> activeItemsMap = Map<PickupPoint, bool>();
+  var activeItemsMap = Map<PickupPoint, PickupReportStatus>();
   final ReportService fbReportService = getFirebaseReportService();
 
   @override
@@ -152,15 +152,19 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  ItemList(List<PickupPoint> items, Map<PickupPoint, bool> activeItemsMap) {
+  ItemList(List<PickupPoint> items, Map<PickupPoint, PickupReportStatus> activeItemsMap) {
     List<Widget> PickupCardsList =  items
-          .where((pp) => activeItemsMap[pp] == true).map((pp) => PickupCard(
+          .where((pp) => activeItemsMap[pp] == PickupReportStatus.uncollected).map((pp) => PickupCard(
               pickupPoint: pp,
               functionality: PickupCardFunctionality.production(
                   onAccept: acceptItem, onReject: rejectItem)))
           .toList();
 
-    List<Widget> InactiveList = items.where((pp) => activeItemsMap[pp] == false).map((pp) => InactiveCard(pickupPoint: pp,activateFunc: activateItem,)).toList();
+    List<Widget> InactiveList = items.where((pp) => activeItemsMap[pp] != PickupReportStatus.uncollected).map((pp) => InactiveCard(
+                                                                              pickupPoint: pp,
+                                                                              activateFunc: activateItem,
+                                                                              status: activeItemsMap[pp]!,
+                                                                              )).toList();
     return ListView(
       children: [...PickupCardsList, ...InactiveList]
     );
@@ -168,7 +172,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> activateItem(PickupPoint item) async{
     setState(() {
-      widget.activeItemsMap[item] = true;
+      widget.activeItemsMap[item] = PickupReportStatus.uncollected;
     });
     
   }
@@ -187,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
         duration: Duration(milliseconds: 1200),
       ));
       setState(() {
-        widget.activeItemsMap[item] = false;
+        widget.activeItemsMap[item] = PickupReportStatus.collected;
       });
     }
     return;
@@ -207,7 +211,7 @@ class _MyHomePageState extends State<MyHomePage> {
         duration: Duration(milliseconds: 1200),
       ));
       setState(() {
-        widget.activeItemsMap[item] = false;
+        widget.activeItemsMap[item] = PickupReportStatus.canceled;
       });
     }
   }
