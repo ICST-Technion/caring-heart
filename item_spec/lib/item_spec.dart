@@ -59,18 +59,18 @@ class Item {
     // json = _tempBridgeToNewFirebase(json);
     return Item(
         id: id,
-        address: json.getNotNull('address'),
+        address: json.getNotNull('address').toString(),
         floor: json.getNotNull('floor').toString(),
         apartment: json.getNotNull('apartment').toString(),
-        neighborhood: json.getNotNull('neighborhood'),
-        city: json.getNotNull('city'),
-        comments: json.getNotNull('comments'),
+        neighborhood: json.getNotNull('neighborhood').toString(),
+        city: json.getNotNull('city').toString(),
+        comments: json.getNotNull('comments').toString(),
         date: json.getNotNull('date').toDate(),
-        description: json.getNotNull('description'),
-        email: json.getNotNull('email'),
+        description: json.getNotNull('description').toString(),
+        email: json.getNotNull('email').toString(),
         isChecked: json.getNotNull('isChecked'),
         isCollected: json.getNotNull('isCollected'),
-        name: json.getNotNull('name'),
+        name: json.getNotNull('name').toString(),
         // pickupTime: time,
         phone: json.getNotNull('phone').toString());
   }

@@ -6,10 +6,12 @@ import 'package:expandable/expandable.dart';
 import 'package:driver_interface/report_dialog.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:item_spec/login.dart';
 import 'package:item_spec/pickup_point.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:item_spec/item_spec.dart';
 import 'package:item_spec/driver_item_service.dart' as DB;
+import 'package:item_spec/auth_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,7 +40,7 @@ class App extends StatelessWidget {
           return ErrorScreen(snapshot.error.toString());
         }
         if (snapshot.connectionState == ConnectionState.done) {
-          return MyApp();
+          return Login(func: (a) => MyApp(auth: a));
         }
         return Center(child: InitScreen());
       },
@@ -70,8 +72,9 @@ class App extends StatelessWidget {
 }
 
 class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key, required this.auth}) : super(key: key);
 
+  final MyAuth auth;
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -92,7 +95,7 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.pink,
             ),
             debugShowCheckedModeBanner: false,
-            home: MyHomePage(title: 'מסלול יומי', itemList: snapshot.data!),
+            home: MyHomePage(title: 'מסלול יומי', itemList: snapshot.data!, auth: auth),
           );
         }
         return LoadingDataScreen();
@@ -123,9 +126,10 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title, required this.itemList})
+  MyHomePage({Key? key, required this.title, required this.itemList, required this.auth})
       : super(key: key);
 
+  final MyAuth auth;
   final String title;
   final List<PickupPoint> itemList;
   final ReportService fbReportService = getFirebaseReportService();
@@ -140,12 +144,26 @@ class _MyHomePageState extends State<MyHomePage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
+        appBar: MyAppBar(),
         body: Center(child: ItemList(widget.itemList)),
       ),
     );
+  }
+
+  AppBar MyAppBar() {
+    if (!widget.auth.remember) {
+      return AppBar(title: Text(widget.title));
+    }
+    return AppBar(title: Text(widget.title), actions: [
+      IconButton(
+          onPressed: () async {
+            await widget.auth.signOut();
+            Navigator.of(context).pushReplacement(MaterialPageRoute(
+              builder: (context) => Login(func: (a) => MyApp(auth: a)),
+            ));
+          },
+          icon: Icon(Icons.logout))
+    ]);
   }
 
   ItemList(List<PickupPoint> items) {
