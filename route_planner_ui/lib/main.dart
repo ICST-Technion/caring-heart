@@ -5,7 +5,6 @@ import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_login/flutter_login.dart';
 import 'package:item_spec/pickup_point.dart';
 import 'package:route_planner_ui/auth_service.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
@@ -15,6 +14,7 @@ import 'package:item_spec/route_item_service.dart' as DB;
 import 'package:item_spec/item_spec.dart';
 import 'package:provider/provider.dart';
 import 'logic.dart';
+import 'login.dart';
 import 'route_dialog.dart';
 
 void main() {
@@ -43,7 +43,7 @@ class App extends StatelessWidget {
           return ErrorScreen(snapshot.error.toString());
         }
         if (snapshot.connectionState == ConnectionState.done) {
-          return Login();
+          return Login(func: (a) => MyApp(auth: a));
         }
         return Center(child: InitScreen());
       },
@@ -75,65 +75,6 @@ class App extends StatelessWidget {
   }
 }
 
-class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
-
-  @override
-  _LoginState createState() => _LoginState();
-}
-
-class _LoginState extends State<Login> {
-  final _auth = MyAuth();
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _auth.isUserRemembered(),
-        builder: (context, AsyncSnapshot<bool?> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (_auth.uid == null &&
-                (snapshot.data == null || !snapshot.data!)) {
-              return loginForm();
-            } else if (snapshot.data != null && snapshot.data!) {
-              return MyApp(auth: _auth);
-            }
-          }
-          return Center(child: CircularProgressIndicator());
-        });
-  }
-
-  Widget loginForm() {
-    return MaterialApp(
-      home: Builder(
-        builder: (context) {
-          return Center(
-              child: Directionality(
-            textDirection: TextDirection.ltr,
-            child: FlutterLogin(
-              theme: LoginTheme(pageColorLight: Colors.lightBlueAccent),
-              onLogin: (LoginData data) =>
-                  _auth.signInWithEmailPassword(data.name, data.password),
-              onSubmitAnimationCompleted: () {
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
-                  builder: (context) => MyApp(auth: _auth),
-                ));
-              },
-              hideForgotPasswordButton: true,
-              hideProvidersTitle: true,
-              onRecoverPassword: (String) {},
-              messages: LoginMessages(
-                  userHint: 'מייל',
-                  passwordHint: 'סיסמה',
-                  loginButton: 'התחברות',
-                  flushbarTitleError: 'שגיאה'),
-            ),
-          ));
-        }
-      ),
-    );
-  }
-}
-
 class MyApp extends StatelessWidget {
   MyApp({Key? key, required this.auth}) : super(key: key);
 
@@ -161,8 +102,8 @@ class MyApp extends StatelessWidget {
                   primarySwatch: Colors.pink,
                 ),
                 debugShowCheckedModeBanner: false,
-                home:
-                    MyHomePage(title: 'תכנון מסלול', itemList: snapshot.data!, auth: auth),
+                home: MyHomePage(
+                    title: 'תכנון מסלול', itemList: snapshot.data!, auth: auth),
               ),
             );
           }
@@ -195,7 +136,11 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   var isLoading = false;
 
-  MyHomePage({Key? key, required this.title, required this.itemList, required this.auth})
+  MyHomePage(
+      {Key? key,
+      required this.title,
+      required this.itemList,
+      required this.auth})
       : super(key: key);
 
   final String title;
@@ -235,7 +180,7 @@ class _MyHomePageState extends State<MyHomePage> {
           onPressed: () async {
             await widget.auth.signOut();
             Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => Login(),
+              builder: (context) => Login(func: (a) => MyApp(auth: a)),
             ));
           },
           icon: Icon(Icons.logout))
