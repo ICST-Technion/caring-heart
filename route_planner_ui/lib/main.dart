@@ -102,7 +102,6 @@ class MyApp extends StatelessWidget {
                 theme: ThemeData(
                   primarySwatch: Colors.pink,
                 ),
-                debugShowCheckedModeBanner: false,
                 home: MyHomePage(
                     title: 'תכנון מסלול', itemList: snapshot.data!, auth: auth),
               ),
