@@ -17,7 +17,11 @@ function format(field, value, format_fields=FORMAT_FIELDS){
 //const spreadsheetId = "1KEnhldGfYakoIgibePV0pxbEiEr2kgRbj2RQyg3R51c";
 const spreadsheetId = "1X1q6YAQdXoEmkUn2KhygDzswDlwZ8epW2NL3jSu1tj0";
 //const spreadsheetId = "1TC2SMsINKsXbUpqb75Bytl9B2VV3O82Yq66Q0hhP-uk";
-const documentPath = '/inventoryTest/{documentId}';
+
+const inventoryCollection = 'inventoryTest';
+const reportsCollection = 'reportsTest';
+const docPath = collection => `/${collection}/{documentId}`;
+
 
 const serviceAccount = require("./serviceAccount.json");
 
@@ -30,8 +34,9 @@ const jwtAuthPromise = jwtClient.authorize();
 const admin = require('firebase-admin');
 
 admin.initializeApp();
+const db = admin.firestore();
 
-exports.createSheets = functions.firestore.document(documentPath)
+exports.createSheets = functions.firestore.document(docPath(inventoryCollection))
     .onCreate((snap, context) => {
         const data = snap.data();
         if (data.fromSheets){
@@ -64,7 +69,7 @@ async function sheetAppendLine(values, range) {
     );
 }
 
-exports.updateSheets = functions.firestore.document(documentPath)
+exports.updateSheets = functions.firestore.document(docPath(inventoryCollection))
     .onUpdate(async (change, context) => {
         const data = change.after.data();
         functions.logger.log("RUNNING updateSheets() with new data", data);
@@ -120,3 +125,15 @@ function formatDate(timestamp)
 function getSheetName() {
     return "Sheet1";
 }
+
+function isVisited(reportData){
+    return ['collected', 'canceled'].includes(reportData?.status); 
+}
+
+exports.updateInventoryOnReport = functions.firestore.document(docPath(reportsCollection)).onWrite(async (change, context) => {
+    const isReportCollected = isVisited(change.after.data());
+    const reportId = context.params.documentId;
+    const inventoryItemId = reportId;  // They are the same
+    await db.doc(`/${inventoryCollection}/${inventoryItemId}`)
+            .set({isCollected: isReportCollected}, { merge: true });
+})
