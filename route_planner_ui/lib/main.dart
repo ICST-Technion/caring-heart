@@ -3,8 +3,8 @@
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:item_spec/login.dart';
 import 'package:item_spec/pickup_point.dart';
 import 'package:route_planner_ui/auth_service.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
@@ -14,7 +14,6 @@ import 'package:item_spec/route_item_service.dart' as DB;
 import 'package:item_spec/item_spec.dart';
 import 'package:provider/provider.dart';
 import 'logic.dart';
-import 'login.dart';
 import 'route_dialog.dart';
 
 void main() {
@@ -69,6 +68,7 @@ class App extends StatelessWidget {
 
   Widget ErrorScreen(String error) {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: Scaffold(
             body:
                 Center(child: Text(error, textDirection: TextDirection.ltr))));
@@ -97,6 +97,7 @@ class MyApp extends StatelessWidget {
                       snapshot.data!.map((e) => Tuple2(false, e)).toList(),
                   selectedItems: []),
               child: MaterialApp(
+                debugShowCheckedModeBanner: false,
                 title: 'תכנון מסלול',
                 theme: ThemeData(
                   primarySwatch: Colors.pink,
@@ -113,20 +114,22 @@ class MyApp extends StatelessWidget {
 
   Widget LoadingDataScreen() {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: Scaffold(
             body: Center(
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        CircularProgressIndicator(),
-        Text(
-          "טוען נתונים...",
-          textDirection: TextDirection.rtl,
-        )
-      ]),
-    )));
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            CircularProgressIndicator(),
+            Text(
+              "טוען נתונים...",
+              textDirection: TextDirection.rtl,
+            )
+          ]),
+        )));
   }
 
   Widget ErrorScreen(String error) {
     return MaterialApp(
+        debugShowCheckedModeBanner: false,
         home: Scaffold(
             body:
                 Center(child: Text(error, textDirection: TextDirection.ltr))));
