@@ -4,7 +4,9 @@ import 'package:flutter_login/flutter_login.dart';
 import 'package:route_planner_ui/auth_service.dart';
 
 class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+  const Login({Key? key, required this.func}) : super(key: key);
+
+  final Widget Function(MyAuth) func;
 
   @override
   _LoginState createState() => _LoginState();
@@ -22,43 +24,41 @@ class _LoginState extends State<Login> {
             if (_auth.uid == null &&
                 (snapshot.data == null || !snapshot.data!)) {
               return loginForm();
+            } else if (snapshot.data != null && snapshot.data!) {
+              return widget.func(_auth);
             }
           }
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         });
   }
 
   Widget loginForm() {
     return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.pink,
-      ),
-      home: Scaffold(
-        body: Builder(
-            builder: (context) {
-              return Center(
-                  child: Directionality(
-                    textDirection: TextDirection.ltr,
-                    child: FlutterLogin(
-                      onLogin: (LoginData data) =>
-                          _auth.signInWithEmailPassword(data.name, data.password),
-                      onSubmitAnimationCompleted: () {
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                          builder: (context) => Container(), //change to app
-                        ));
-                      },
-                      hideForgotPasswordButton: true,
-                      hideProvidersTitle: true,
-                      onRecoverPassword: (String) {},
-                      messages: LoginMessages(
-                          userHint: 'מייל',
-                          passwordHint: 'סיסמה',
-                          loginButton: 'התחברות',
-                          flushbarTitleError: 'שגיאה'),
-                    ),
-                  ));
-            }
-        ),
+      home: Builder(
+          builder: (context) {
+            return Center(
+                child: Directionality(
+                  textDirection: TextDirection.ltr,
+                  child: FlutterLogin(
+                    theme: LoginTheme(pageColorLight: Colors.lightBlueAccent),
+                    onLogin: (LoginData data) =>
+                        _auth.signInWithEmailPassword(data.name, data.password),
+                    onSubmitAnimationCompleted: () {
+                      Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => widget.func(_auth),
+                      ));
+                    },
+                    hideForgotPasswordButton: true,
+                    hideProvidersTitle: true,
+                    onRecoverPassword: (String) {},
+                    messages: LoginMessages(
+                        userHint: 'מייל',
+                        passwordHint: 'סיסמה',
+                        loginButton: 'התחברות',
+                        flushbarTitleError: 'שגיאה'),
+                  ),
+                ));
+          }
       ),
     );
   }
