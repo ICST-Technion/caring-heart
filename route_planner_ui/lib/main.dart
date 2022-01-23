@@ -6,7 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:item_spec/login.dart';
 import 'package:item_spec/pickup_point.dart';
-import 'package:route_planner_ui/auth_service.dart';
+import 'package:item_spec/auth_service.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
 import 'package:route_planner_ui/selected_item_list.dart';
 import 'package:tuple/tuple.dart';

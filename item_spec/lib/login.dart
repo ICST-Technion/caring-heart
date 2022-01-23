@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
-import 'package:route_planner_ui/auth_service.dart';
+import 'auth_service.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key, required this.func}) : super(key: key);
