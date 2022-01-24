@@ -203,7 +203,10 @@ class _MyHomePageState extends State<MyHomePage> {
         context: context,
         builder: (context) => ReportDialog(
             pickupPoint: item,
-            type: ReportDialogType.collect(['שולחן', 'כסא'])));
+            type: ReportDialogType.collect(['שולחן', 'כסא']
+            )
+            )
+    );
     
     if (rejected ==  true){
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

@@ -1,5 +1,6 @@
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
+// import 'package:intl/intl.dart';
 import 'package:item_spec/item_spec.dart';
 import 'package:item_spec/pickup_point.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -71,10 +72,34 @@ class _PickupCardState extends State<PickupCard> {
       child: ExpandablePanel(
         header: ListItem(widget.pickupPoint),
         collapsed: Container(),
-        expanded: CardButtons(widget.pickupPoint),
+        expanded: Column(children: [  
+          InfoWidget(widget.pickupPoint.item.apartment, "מספר דירה: "),        
+          InfoWidget(widget.pickupPoint.item.floor, "קומה: "),        
+          InfoWidget(widget.pickupPoint.item.comments, "הערות: "),        
+          CardButtons(widget.pickupPoint),
+        ],
+
+
+  
+        ), 
         theme: const ExpandableThemeData(
-            headerAlignment: ExpandablePanelHeaderAlignment.center),
+        headerAlignment: ExpandablePanelHeaderAlignment.center),
       ),
+    );
+  }
+
+  Widget InfoWidget(String data, String field){
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      textDirection: TextDirection.rtl,
+      children: [
+      //   Card(child:
+      //     Text(field)),
+      //   Card(child:
+      //     Text(data)
+          Text(field),
+          Text(data),
+      ],
     );
   }
 
