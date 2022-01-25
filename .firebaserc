@@ -1,14 +1,15 @@
 {
   "projects": {
-    "default": "caring-heart-aa1c1"
+    "default": "caring-heart-tech"
   },
   "targets": {
-    "caring-heart-aa1c1": {
+    "caring-heart-tech": {
       "hosting": {
         "routePlanner": [
-          "route-plan"
+          "plan-route"
         ],
         "drivers": [
+          "driver-pickup",
           "pick-up"
         ]
       }

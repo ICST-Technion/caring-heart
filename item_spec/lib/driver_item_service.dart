@@ -1,8 +1,10 @@
-import 'package:date_format/date_format.dart';
+// import 'package:date_format/date_format.dart';
 
 import 'package:item_spec/item_spec.dart';
 import 'package:item_spec/pickup_point.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'format_date.dart';
 
 class ItemService {
   ItemService();
@@ -12,7 +14,7 @@ class ItemService {
     final day = getDay();
     final route = FirebaseFirestore.instance.collection('routesTest');
     return route
-        .where('date', isEqualTo: formatDate(day, [yyyy, '-', mm, '-', dd]))
+        .where('date', isEqualTo: formatDate(day))
         .get()
         .then((res) => createPickupPointListFromRoute(res.docs));
   }

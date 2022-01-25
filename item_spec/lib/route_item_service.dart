@@ -4,6 +4,8 @@ import 'package:tuple/tuple.dart';
 import 'package:item_spec/item_spec.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'format_date.dart';
+
 class ItemService {
   ItemService();
 
@@ -32,25 +34,23 @@ class ItemService {
     var ref = FirebaseFirestore.instance.collection('routesTest');
     var snapshot = await ref.where('date', isEqualTo: formatDate(date)).get();
     if (snapshot.docs.isNotEmpty) {
-      await snapshot.docs[0].reference.set({'items': list.map((pickup) =>
-      {'itemID': pickup.item.id, 'time': pickup.pickupTime}).toList()});
+      await snapshot.docs[0].reference.set({
+        'items': list
+            .map((pickup) =>
+                {'itemID': pickup.item.id, 'time': pickup.pickupTime})
+            .toList()
+      });
       found = true;
     }
     //if no doc was found, add a new one
     if (!found) {
       ref.add({
         'date': formatDate(date),
-        'items': list.map((pickup) =>
-        {'itemID': pickup.item.id, 'time': pickup.pickupTime}).toList()
+        'items': list
+            .map((pickup) =>
+                {'itemID': pickup.item.id, 'time': pickup.pickupTime})
+            .toList()
       });
     }
-  }
-
-  formatDate(DateTime date) {
-    return date.year.toString() +
-        '-' +
-        date.month.toString() +
-        '-' +
-        date.day.toString();
   }
 }

@@ -37,9 +37,11 @@ class ItemListProvider with ChangeNotifier {
     return selectedItems.any((element) => element.pickupTime == '');
   }
 
-  void loadNewRoute(DateTime date) async {
+  void loadNewRoute(DateTime date, {bool notify = true}) async {
     isLoading = true;
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
     selectedItems = await DB.ItemService().getItems(getDay: () => date);
     List<String> tempItemList = selectedItems.map((e) => e.item.id).toList();
     itemList = itemList
@@ -48,7 +50,9 @@ class ItemListProvider with ChangeNotifier {
             : Tuple2(false, e.item2))
         .toList();
     isLoading = false;
-    notifyListeners();
+    if (notify) {
+      notifyListeners();
+    }
   }
 
   void changePickupTimeAt(idx, time) {

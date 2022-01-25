@@ -73,6 +73,8 @@ class MyApp extends StatelessWidget {
 
   MyAuth auth;
   final Future<List<Item>> _itemList = DB.ItemService().getCheckedItems();
+  // final Future<List<PickupPoint>> _selectedItems =
+  //     DB.ItemService().getItems(DateTime.now());
 
   // This widget is the root of your application.
   @override
@@ -160,6 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Logic.getProvider(context, false).loadNewRoute(selectedDate, notify: false);
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(appBar: MyAppBar(), body: RoutePlanner()),
