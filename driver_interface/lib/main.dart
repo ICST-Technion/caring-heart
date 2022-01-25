@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'package:item_spec/firebase_options.dart';
 import 'package:driver_interface/pickup_card.dart';
 import 'package:driver_interface/inactive_card.dart';
 import 'package:driver_interface/report_service.dart';
@@ -20,16 +21,8 @@ void main() {
 }
 
 class App extends StatelessWidget {
-  final Future<FirebaseApp> _initialization = Firebase.initializeApp(
-    options: FirebaseOptions(
-        apiKey: "AIzaSyAthHM9OIfBl2ZGEQXpLNNReIlscA0DDzY",
-        authDomain: "caring-heart-aa1c1.firebaseapp.com",
-        projectId: "caring-heart-aa1c1",
-        storageBucket: "caring-heart-aa1c1.appspot.com",
-        messagingSenderId: "182054728263",
-        appId: "1:182054728263:web:148c0f7de618b0bfc07762",
-        measurementId: "G-L7KXZNNTP3"),
-  );
+  final Future<FirebaseApp> _initialization =
+      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   @override
   Widget build(BuildContext context) {

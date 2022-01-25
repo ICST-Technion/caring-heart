@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:item_spec/login.dart';
 import 'package:item_spec/pickup_point.dart';
 import 'package:item_spec/auth_service.dart';
+import 'package:item_spec/firebase_options.dart';
 import 'package:route_planner_ui/item_list_provider.dart';
 import 'package:route_planner_ui/selected_item_list.dart';
 import 'package:tuple/tuple.dart';
@@ -22,16 +23,8 @@ void main() {
 }
 
 class App extends StatelessWidget {
-  final Future<FirebaseApp> _initialization = Firebase.initializeApp(
-    options: FirebaseOptions(
-        apiKey: "AIzaSyAthHM9OIfBl2ZGEQXpLNNReIlscA0DDzY",
-        authDomain: "caring-heart-aa1c1.firebaseapp.com",
-        projectId: "caring-heart-aa1c1",
-        storageBucket: "caring-heart-aa1c1.appspot.com",
-        messagingSenderId: "182054728263",
-        appId: "1:182054728263:web:148c0f7de618b0bfc07762",
-        measurementId: "G-L7KXZNNTP3"),
-  );
+  final Future<FirebaseApp> _initialization =
+      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   @override
   Widget build(BuildContext context) {

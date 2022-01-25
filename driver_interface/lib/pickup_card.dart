@@ -128,7 +128,7 @@ class _PickupCardState extends State<PickupCard> {
     return Column(
       children: [
         ListTile(
-          title: Text(item.item.address),
+          title: Text('${item.item.name} - ${item.item.address}'),
           subtitle: Text(item.pickupTime),
           trailing: itemButtons(item),
         ),
