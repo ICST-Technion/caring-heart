@@ -43,35 +43,17 @@ const constants = {
     {name: "isCollected", required: true, checkForEmptyness: false},
   ],
   FORM_FIELDS: [
-    // "date", 
-    // "email", 
-    // "name", 
-    // "city",
-    // "neighborhood", 
-    // "address",
-    // "phone", 
-    // "category", 
-    // "description", 
-    // "comments",
-
     "date", 
     "email", 
     "name", 
     "city",
     "neighborhood", 
     "address",
-
-    // NEW
-    "floor",
-    "apartment",
-
     "phone", 
-
-    // DELETED
-    // "category", 
-
     "description", 
     "comments",
+    "floor",
+    "apartment",
   ]
 
 }
