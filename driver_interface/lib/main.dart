@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
 import 'package:driver_interface/pickup_card.dart';
+import 'package:driver_interface/inactive_card.dart';
 import 'package:driver_interface/report_service.dart';
 import 'package:expandable/expandable.dart';
 import 'package:driver_interface/report_dialog.dart';
@@ -95,7 +96,8 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.pink,
             ),
             debugShowCheckedModeBanner: false,
-            home: MyHomePage(title: 'מסלול יומי', itemList: snapshot.data!, auth: auth),
+            home: MyHomePage(
+                title: 'מסלול יומי', itemList: snapshot.data!, auth: auth),
           );
         }
         return LoadingDataScreen();
@@ -126,12 +128,21 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title, required this.itemList, required this.auth})
-      : super(key: key);
+  MyHomePage(
+      {Key? key,
+      required this.title,
+      required this.itemList,
+      required this.auth})
+      : super(key: key) {
+    activeItemsMap = {
+      for (var item in itemList) item: PickupReportStatus.uncollected
+    };
+  }
 
   final MyAuth auth;
   final String title;
   final List<PickupPoint> itemList;
+  var activeItemsMap = Map<PickupPoint, PickupReportStatus>();
   final ReportService fbReportService = getFirebaseReportService();
 
   @override
@@ -144,8 +155,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        appBar: MyAppBar(),
-        body: Center(child: ItemList(widget.itemList)),
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: Center(child: ItemList(widget.itemList, widget.activeItemsMap)),
       ),
     );
   }
@@ -166,38 +179,67 @@ class _MyHomePageState extends State<MyHomePage> {
     ]);
   }
 
-  ItemList(List<PickupPoint> items) {
-    return ListView(
-      children: items
-          .map((pp) => PickupCard(
+  ItemList(List<PickupPoint> items,
+      Map<PickupPoint, PickupReportStatus> activeItemsMap) {
+    List<Widget> PickupCardsList = items
+        .where((pp) => activeItemsMap[pp] == PickupReportStatus.uncollected)
+        .map((pp) => PickupCard(
+            pickupPoint: pp,
+            functionality: PickupCardFunctionality.production(
+                onAccept: acceptItem, onReject: rejectItem)))
+        .toList();
+
+    List<Widget> InactiveList = items
+        .where((pp) => activeItemsMap[pp] != PickupReportStatus.uncollected)
+        .map((pp) => InactiveCard(
               pickupPoint: pp,
-              functionality: PickupCardFunctionality.production(
-                  onAccept: AcceptItem, onReject: RejectItem)))
-          .toList(),
-    );
+              activateFunc: activateItem,
+              status: activeItemsMap[pp]!,
+            ))
+        .toList();
+    return ListView(children: [...PickupCardsList, ...InactiveList]);
   }
 
-  Future<void> AcceptItem(PickupPoint item) async {
+  Future<void> activateItem(PickupPoint item) async {
+    setState(() {
+      widget.activeItemsMap[item] = PickupReportStatus.uncollected;
+    });
+  }
+
+  Future<void> acceptItem(PickupPoint item) async {
     // await DB.ItemService().collectItem(item.item.id);
-    await showDialog(
+    bool? rejected = await showDialog(
         context: context,
         builder: (context) => ReportDialog(
             pickupPoint: item,
             type: ReportDialogType.collect(['שולחן', 'כסא'])));
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('האיסוף הושלם'),
-      duration: Duration(milliseconds: 1200),
-    ));
+
+    if (rejected == true) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('האיסוף הושלם'),
+        duration: Duration(milliseconds: 1200),
+      ));
+      setState(() {
+        widget.activeItemsMap[item] = PickupReportStatus.collected;
+      });
+    }
     return;
   }
 
-  Future<void> RejectItem(PickupPoint item) async {
-    await showDialog(
+  Future<void> rejectItem(PickupPoint item) async {
+    bool? rejected = await showDialog(
         context: context,
         builder: (context) =>
             ReportDialog(pickupPoint: item, type: ReportDialogType.cancel()));
-    // setState(() {
-    //   widget.itemList.remove(item);
-    // });
+
+    if (rejected == true) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('האיסוף בוטל'),
+        duration: Duration(milliseconds: 1200),
+      ));
+      setState(() {
+        widget.activeItemsMap[item] = PickupReportStatus.canceled;
+      });
+    }
   }
 }
