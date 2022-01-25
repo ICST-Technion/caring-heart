@@ -57,6 +57,8 @@ function getInventory(collection="inventoryTest", firestoreProvider=firestore.ge
     addItem: function(item, fromSheets=true){
       if(fromSheets){
         item = prepItemForDb(item)
+      }else{
+        item.fromSheets = false;
       }
       const doc = firestoreInstance.createDocument(collection, item)
       const [_collection, key] = doc.path.split('/')

@@ -39,6 +39,7 @@ const db = admin.firestore();
 exports.createSheets = functions.firestore.document(docPath(inventoryCollection))
     .onCreate((snap, context) => {
         const data = snap.data();
+        data.fromSheets = data.fromSheets ?? false;
         if (data.fromSheets){
             return snap.ref.set({ fromSheets: false}, {merge: true});
         }
