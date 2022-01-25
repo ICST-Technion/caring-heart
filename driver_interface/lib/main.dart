@@ -96,7 +96,8 @@ class MyApp extends StatelessWidget {
               primarySwatch: Colors.pink,
             ),
             debugShowCheckedModeBanner: false,
-            home: MyHomePage(title: 'מסלול יומי', itemList: snapshot.data!, auth: auth),
+            home: MyHomePage(
+                title: 'מסלול יומי', itemList: snapshot.data!, auth: auth),
           );
         }
         return LoadingDataScreen();
@@ -127,10 +128,16 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title, required this.itemList, required this.auth})
-      : super(key: key){
-        activeItemsMap = { for (var item in itemList) item : PickupReportStatus.uncollected};
-      }
+  MyHomePage(
+      {Key? key,
+      required this.title,
+      required this.itemList,
+      required this.auth})
+      : super(key: key) {
+    activeItemsMap = {
+      for (var item in itemList) item: PickupReportStatus.uncollected
+    };
+  }
 
   final MyAuth auth;
   final String title;
@@ -156,7 +163,7 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-    AppBar MyAppBar() {
+  AppBar MyAppBar() {
     if (!widget.auth.remember) {
       return AppBar(title: Text(widget.title));
     }
@@ -172,29 +179,31 @@ class _MyHomePageState extends State<MyHomePage> {
     ]);
   }
 
-  ItemList(List<PickupPoint> items, Map<PickupPoint, PickupReportStatus> activeItemsMap) {
-    List<Widget> PickupCardsList =  items
-          .where((pp) => activeItemsMap[pp] == PickupReportStatus.uncollected).map((pp) => PickupCard(
-              pickupPoint: pp,
-              functionality: PickupCardFunctionality.production(
-                  onAccept: acceptItem, onReject: rejectItem)))
-          .toList();
+  ItemList(List<PickupPoint> items,
+      Map<PickupPoint, PickupReportStatus> activeItemsMap) {
+    List<Widget> PickupCardsList = items
+        .where((pp) => activeItemsMap[pp] == PickupReportStatus.uncollected)
+        .map((pp) => PickupCard(
+            pickupPoint: pp,
+            functionality: PickupCardFunctionality.production(
+                onAccept: acceptItem, onReject: rejectItem)))
+        .toList();
 
-    List<Widget> InactiveList = items.where((pp) => activeItemsMap[pp] != PickupReportStatus.uncollected).map((pp) => InactiveCard(
-                                                                              pickupPoint: pp,
-                                                                              activateFunc: activateItem,
-                                                                              status: activeItemsMap[pp]!,
-                                                                              )).toList();
-    return ListView(
-      children: [...PickupCardsList, ...InactiveList]
-    );
+    List<Widget> InactiveList = items
+        .where((pp) => activeItemsMap[pp] != PickupReportStatus.uncollected)
+        .map((pp) => InactiveCard(
+              pickupPoint: pp,
+              activateFunc: activateItem,
+              status: activeItemsMap[pp]!,
+            ))
+        .toList();
+    return ListView(children: [...PickupCardsList, ...InactiveList]);
   }
 
-  Future<void> activateItem(PickupPoint item) async{
+  Future<void> activateItem(PickupPoint item) async {
     setState(() {
       widget.activeItemsMap[item] = PickupReportStatus.uncollected;
     });
-    
   }
 
   Future<void> acceptItem(PickupPoint item) async {
@@ -203,12 +212,9 @@ class _MyHomePageState extends State<MyHomePage> {
         context: context,
         builder: (context) => ReportDialog(
             pickupPoint: item,
-            type: ReportDialogType.collect(['שולחן', 'כסא']
-            )
-            )
-    );
-    
-    if (rejected ==  true){
+            type: ReportDialogType.collect(['שולחן', 'כסא'])));
+
+    if (rejected == true) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('האיסוף הושלם'),
         duration: Duration(milliseconds: 1200),
@@ -222,13 +228,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> rejectItem(PickupPoint item) async {
     bool? rejected = await showDialog(
-      context: context,
-      builder: (context) =>
-        ReportDialog(pickupPoint: item, type: ReportDialogType.cancel()
-      )
-    );
-    
-    if (rejected ==  true){
+        context: context,
+        builder: (context) =>
+            ReportDialog(pickupPoint: item, type: ReportDialogType.cancel()));
+
+    if (rejected == true) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('האיסוף בוטל'),
         duration: Duration(milliseconds: 1200),
