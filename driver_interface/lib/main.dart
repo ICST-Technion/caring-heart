@@ -197,6 +197,8 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       widget.activeItemsMap[item] = PickupReportStatus.uncollected;
     });
+    await widget.fbReportService
+        .setReport(PickupReport.uncollected(itemID: item.item.id));
   }
 
   Future<void> acceptItem(PickupPoint item) async {
