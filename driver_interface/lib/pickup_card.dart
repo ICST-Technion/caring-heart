@@ -1,5 +1,6 @@
 import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
+// import 'package:intl/intl.dart';
 import 'package:item_spec/item_spec.dart';
 import 'package:item_spec/pickup_point.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -71,27 +72,74 @@ class _PickupCardState extends State<PickupCard> {
       child: ExpandablePanel(
         header: ListItem(widget.pickupPoint),
         collapsed: Container(),
-        expanded: CardButtons(widget.pickupPoint),
+        expanded: Column(
+          children: [
+            InfoWidget(widget.pickupPoint.item.apartment, "מספר דירה: "),
+            InfoWidget(widget.pickupPoint.item.floor, "קומה: "),
+            InfoWidget(widget.pickupPoint.item.comments, "הערות: ",
+                prefixInstead: ' *'),
+            CardButtons(widget.pickupPoint),
+          ],
+        ),
         theme: const ExpandableThemeData(
-            headerAlignment: ExpandablePanelHeaderAlignment.center),
+            headerAlignment: ExpandablePanelHeaderAlignment.bottom),
+      ),
+    );
+  }
+
+  Widget InfoWidget(String data, String field, {String? prefixInstead}) {
+    late final List<Widget> widgets;
+    if (prefixInstead == null) {
+      widgets = [
+        Text(field),
+        SizedBox(
+          child: Text(data),
+          width: 270,
+        ),
+      ];
+    } else {
+      widgets = [
+        SizedBox(
+          child: Text(prefixInstead + data),
+          width: 270,
+        ),
+      ];
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+      child: DefaultTextStyle(
+        style: TextStyle(
+          color: Colors.black.withOpacity(0.6),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          textDirection: TextDirection.rtl,
+          children: widgets,
+        ),
       ),
     );
   }
 
   Widget CardButtons(PickupPoint item) {
-    return Center(
-      child: Column(
-        children: [const Divider(height: 1), AcceptOrReject(item)],
-      ),
-    );
+    return Center(child: AcceptOrReject(item));
   }
 
   Widget ListItem(PickupPoint item) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-        child: ItemStuff(item),
-      ),
+    return Column(
+      children: [
+        ListTile(
+          title: Text(item.item.address),
+          subtitle: Text(item.pickupTime),
+          trailing: itemButtons(item),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            item.item.description,
+            style: TextStyle(color: Colors.black.withOpacity(0.6)),
+          ),
+        )
+      ],
     );
   }
 
@@ -124,7 +172,8 @@ class _PickupCardState extends State<PickupCard> {
   Widget itemButtons(PickupPoint pickupPoint) {
     final phone = pickupPoint.item.phone;
     final address = pickupPoint.item.address;
-    return Column(
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
             splashRadius: 24,
@@ -172,7 +221,3 @@ class _PickupCardState extends State<PickupCard> {
     );
   }
 }
-
-
-
-

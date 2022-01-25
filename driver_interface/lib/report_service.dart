@@ -98,7 +98,7 @@ class ReportService {
 
   final Future<Map<String, dynamic>> Function(String itemID) _getReportById;
 
-  ReportService(this._uploadReport, this._getReportById);
+  ReportService(this._uploadReport, this._getReportById); 
 
   Future<void> setReport(PickupReport report) {
     return _uploadReport(report.toJson(), report.itemID);
