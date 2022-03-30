@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
+import 'package:driver_interface/item_names.dart';
 import 'package:item_spec/firebase_options.dart';
 import 'package:driver_interface/pickup_card.dart';
 import 'package:driver_interface/inactive_card.dart';
@@ -72,9 +73,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    final dayToShow = DateTime(2021, 12, 22); // TODO change to DateTime.now()
+    const dayToShow = DateTime.now;
     final Future<List<PickupPoint>> _itemList =
-        DB.ItemService().getItems(getDay: () => dayToShow);
+        DB.ItemService().getItems(getDay: dayToShow);
     return FutureBuilder(
       future: _itemList,
       builder: (context, AsyncSnapshot<List<PickupPoint>> snapshot) {
@@ -206,8 +207,7 @@ class _MyHomePageState extends State<MyHomePage> {
     bool? rejected = await showDialog(
         context: context,
         builder: (context) => ReportDialog(
-            pickupPoint: item,
-            type: ReportDialogType.collect(['שולחן', 'כסא'])));
+            pickupPoint: item, type: ReportDialogType.collect(itemNames)));
 
     if (rejected == true) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
