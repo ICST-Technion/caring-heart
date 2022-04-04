@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_simple_dependency_injection/injector.dart';
+import 'package:nivapp/production_module.dart';
 
+late final Injector injector;
 void main() {
+  injector = ProductionModule();
   runApp(const MyApp());
 }
 
@@ -49,6 +53,7 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Logic.getProvider(context, false).loadNewRoute(selectedDate, notify: false);
+
     return Directionality(
       textDirection: TextDirection.rtl,
       child: WillPopScope(

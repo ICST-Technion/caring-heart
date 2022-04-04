@@ -43,6 +43,7 @@ dependencies:
   expandable: ^5.0.1
   flutter_typeahead: ^3.2.4
   tuple: ^2.0.0
+  flutter_simple_dependency_injection: ^2.0.0
 
 dev_dependencies:
   flutter_test:
