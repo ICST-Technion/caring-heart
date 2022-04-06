@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_simple_dependency_injection/injector.dart';
 import 'package:nivapp/production_module.dart';
+import 'package:nivapp/services/auth_service_i.dart';
+import 'package:nivapp/services/init_service.dart';
 
 late final Injector injector;
 void main() {
@@ -26,46 +28,61 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.pink,
       ),
       initialRoute: '/',
       routes: {
         '/': (c) => Container(),
         // When navigating to the "/" route, build the FirstScreen widget.
         '/planner': (context) => MyHomePage(
-              title: 'planner',
+              title: 'תכנון מסלול',
               getHomePage: () => Container(),
             ),
         // When navigating to the "/second" route, build the SecondScreen widget.
         '/drivers': (context) =>
-            MyHomePage(title: 'drivers', getHomePage: () => Container()),
+            MyHomePage(title: 'איסוף תרומות', getHomePage: () => Container()),
       },
     );
   }
 }
 
 class MyHomePage extends StatelessWidget {
-  const MyHomePage({Key? key, required this.title, required this.getHomePage})
+  MyHomePage({Key? key, required this.title, required this.getHomePage})
       : super(key: key);
   final String title;
   final Widget Function() getHomePage;
+  final _auth = injector.get<AuthServiceI>();
+  final _init = injector.get<InitService>();
 
   @override
   Widget build(BuildContext context) {
     // Logic.getProvider(context, false).loadNewRoute(selectedDate, notify: false);
-
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: WillPopScope(
-          onWillPop: () async => false,
-          child: Scaffold(appBar: MyAppBar(), body: getHomePage())),
+    return FutureBuilder(
+      future: _init.init(),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return ErrorScreen(snapshot.error.toString());
+        }
+        // if (snapshot.connectionState == ConnectionState.done) {
+        //   return Login(func: (a) => MyApp(auth: a));
+        // }
+        return Center(child: LoadingDataScreen());
+      },
     );
+  }
+
+  Widget ErrorScreen(String error) {
+    return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+            body:
+                Center(child: Text(error, textDirection: TextDirection.ltr))));
   }
 
   AppBar MyAppBar() {
     // TODO insert injector for auth
 
-    // if (!widget.auth.remember) {
+    // if (! await _auth.isUserRemembered()) {
     return AppBar(title: Text(title));
     // }
     // return AppBar(title: Text(widget.title), actions: [
@@ -78,6 +95,26 @@ class MyHomePage extends StatelessWidget {
     //       },
     //       icon: Icon(Icons.logout))
     // ]);
+  }
+}
+
+class LoadingDataScreen extends StatelessWidget {
+  const LoadingDataScreen({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: Center(
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        CircularProgressIndicator(),
+        Text(
+          "טוען נתונים...",
+          textDirection: TextDirection.rtl,
+        )
+      ]),
+    ));
   }
 }
 // class MyHomePage extends StatefulWidget {
