@@ -13,11 +13,11 @@ class MyAuth implements AuthServiceI {
   MyAuth({required this.auth, required this.sharedPreferences});
 
   @override
-  Future<bool?> isUserRemembered() async {
+  Future<bool> isUserRemembered() async {
     bool? result =
         await sharedPreferences.then((value) => value.getBool('auth'));
     remember = true;
-    return result;
+    return result != null && result;
   }
 
   @override
