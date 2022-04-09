@@ -3,6 +3,10 @@ import 'package:flutter_simple_dependency_injection/injector.dart';
 import 'package:nivapp/services/auth_service.dart';
 import 'package:nivapp/services/auth_service_i.dart';
 import 'package:nivapp/services/init_service.dart';
+import 'package:nivapp/services/inventory_service.dart';
+import 'package:nivapp/services/inventory_service_i.dart';
+import 'package:nivapp/services/routes_service.dart';
+import 'package:nivapp/services/routes_service_i.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Injector ProductionModule() {
@@ -16,5 +20,7 @@ Injector ProductionModule() {
       isSingleton: true);
   injector.map<InitService>((i) => InitService(), isSingleton: true);
 
+  injector.map<InventoryServiceI>((i) => InventoryService());
+  injector.map<RoutesServiceI>((i) => RoutesService(i.get<InventoryService>()));
   return injector;
 }
