@@ -8,15 +8,18 @@ import 'format_date.dart';
 
 class ItemService {
   ItemService();
-
-  Future<List<Item>> getCheckedItems() async {
+  /// Returns all collected items.
+  /// Items stuff
+  Future<List<Item>> getCheckedItems() async { // TODO: might have bugs.
     final ref = FirebaseFirestore.instance.collection('inventoryTest');
     return ref
-        .where('isCollected', isEqualTo: false)
+        .where('isCollected', isEqualTo: false) 
         .get()
         .then((res) => createItemListFromInventory(res.docs));
   }
 
+  /// Returns Item list from firebase json data of all items.
+  /// items stuff.
   Future<List<Item>> createItemListFromInventory(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
     List<Item> items = [];
@@ -27,7 +30,8 @@ class ItemService {
     }
     return items;
   }
-
+  /// add route to firebase routes database from PickupPoint list.
+  /// route stuff?
   Future<void> addRouteByItemList(List<PickupPoint> list, DateTime date) async {
     bool found = false;
     //check if a route already exists, and if so, update it

@@ -9,6 +9,8 @@ import 'format_date.dart';
 class ItemService {
   ItemService();
 
+  /// Returns the items in current day's route.
+  /// route stuff
   Future<List<PickupPoint>> getItems(
       {DateTime Function() getDay = DateTime.now}) async {
     final day = getDay();
@@ -19,6 +21,8 @@ class ItemService {
         .then((res) => createPickupPointListFromRoute(res.docs));
   }
 
+  /// returns PickupPoint list of point's in today's route from docs.
+  /// route stuff
   Future<List<PickupPoint>> createPickupPointListFromRoute(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
     List<PickupPoint> pickupPoints = [];
@@ -33,7 +37,8 @@ class ItemService {
     }
     return pickupPoints;
   }
-
+  /// returns item by its id.
+  /// Items stuff
   Future<Item> getItemByID(String id) async {
     const collectionPath = 'inventoryTest';
     final inventory = FirebaseFirestore.instance.collection(collectionPath);
@@ -44,7 +49,8 @@ class ItemService {
     }
     return Item.fromJson(id, itemData.data()!);
   }
-
+  /// Check item as collected.
+  /// Items stuff.
   Future<void> collectItem(id) async {
     final route = FirebaseFirestore.instance.collection('inventoryTest');
     await route.doc(id).update({
