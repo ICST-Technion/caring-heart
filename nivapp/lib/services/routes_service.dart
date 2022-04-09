@@ -30,7 +30,7 @@ class routes_service implements routes_service_i{
       // print('pickupPointsJson:');
       // print(pickupPointsJson);
       for (final pickup in pickupPointsJson) {
-        final Item item = await getItemByID(pickup['itemID']);
+        final Item item = await getItemByID(pickup['itemID']); //TODO: fix this (moved this function to items.
         pickupPoints.add(PickupPoint(item: item, pickupTime: pickup['time']));
       }
     }
