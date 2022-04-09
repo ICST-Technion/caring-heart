@@ -8,17 +8,6 @@ extension _GetValue<U, V> on Map<U, V> {
   }
 }
 
-Map<String, dynamic> _tempBridgeToNewFirebase(
-    Map<String, dynamic> oldFirebaseItem) {
-  final Map<String, dynamic> res = Map.from(oldFirebaseItem);
-
-  // arbitrary values that are a function of the old item
-  final floor = 1; //(res['name'] as String).length % 5;
-  res['floor'] = '$floor';
-  res['apartment'] = '${floor + 1}';
-  return res;
-}
-
 class Item {
   final String address;
   final String floor;
@@ -74,5 +63,4 @@ class Item {
         // pickupTime: time,
         phone: json.getNotNull('phone').toString());
   }
-
 }
