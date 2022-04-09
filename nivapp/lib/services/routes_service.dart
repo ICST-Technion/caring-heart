@@ -1,17 +1,17 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:nivapp/main.dart';
-import 'package:nivapp/services/auth_service_i.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:nivapp/services/inventory_service_i.dart';
 import 'package:nivapp/services/routes_service_i.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nivapp/pickup_point.dart';
 import 'package:nivapp/format_date.dart';
 import 'package:nivapp/item_spec.dart';
 
-class routes_service implements routes_service_i{
+class RoutesService implements RoutesServiceI {
+  final InventoryServiceI inventoryService;
+  RoutesService(this.inventoryService);
+
   /// Returns the items in current day's route.
   /// new name option: getDailyRoute.
+  @override
   Future<List<PickupPoint>> getItems(
       {DateTime Function() getDay = DateTime.now}) async {
     final day = getDay();
@@ -19,10 +19,10 @@ class routes_service implements routes_service_i{
     return route
         .where('date', isEqualTo: formatDate(day))
         .get()
-        .then((res) => createPickupPointListFromRoute(res.docs));
+        .then((res) => _createPickupPointListFromRoute(res.docs));
   }
 
-  Future<List<PickupPoint>> createPickupPointListFromRoute(
+  Future<List<PickupPoint>> _createPickupPointListFromRoute(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
     List<PickupPoint> pickupPoints = [];
     for (var doc in docs) {
@@ -30,13 +30,15 @@ class routes_service implements routes_service_i{
       // print('pickupPointsJson:');
       // print(pickupPointsJson);
       for (final pickup in pickupPointsJson) {
-        final Item item = await getItemByID(pickup['itemID']); //TODO: fix this (moved this function to items.
+        final Item item = await inventoryService.getItemByID(pickup['itemID']);
         pickupPoints.add(PickupPoint(item: item, pickupTime: pickup['time']));
       }
     }
     return pickupPoints;
   }
+
   /// add route to firebase routes database from PickupPoint list.
+  @override
   Future<void> addRouteByItemList(List<PickupPoint> list, DateTime date) async {
     bool found = false;
     //check if a route already exists, and if so, update it
@@ -46,7 +48,7 @@ class routes_service implements routes_service_i{
       await snapshot.docs[0].reference.set({
         'items': list
             .map((pickup) =>
-        {'itemID': pickup.item.id, 'time': pickup.pickupTime})
+                {'itemID': pickup.item.id, 'time': pickup.pickupTime})
             .toList()
       });
       found = true;
@@ -57,7 +59,7 @@ class routes_service implements routes_service_i{
         'date': formatDate(date),
         'items': list
             .map((pickup) =>
-        {'itemID': pickup.item.id, 'time': pickup.pickupTime})
+                {'itemID': pickup.item.id, 'time': pickup.pickupTime})
             .toList()
       });
     }
