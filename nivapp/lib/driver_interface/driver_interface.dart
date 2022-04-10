@@ -15,15 +15,23 @@ import 'inactive_card.dart';
 
 class DriverInterface extends StatelessWidget {
   const DriverInterface({Key? key}) : super(key: key);
+
   RoutesServiceI get routesService => injector.get();
+
   @override
   Widget build(BuildContext context) {
     return easyFutureBuilder<List<PickupPoint>>(
-        future: routesService.getItems(),
+        future: routesService.getItems(getDay: () => DateTime(2021,12,22)),
         doneBuilder: (context, todaysRoute) => ChangeNotifierProvider(
             create: (context) => DriverInterfaceProvider(
                 todaysRoute, injector.get<ReportServiceI>()),
-            child: const Center(child: PickupPointsCards())));
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: Scaffold(
+                appBar: AppBar(title: Text("איסוף תרומות")),
+                body: Center(child: PickupPointsCards()),
+              ),
+            )));
   }
 }
 
@@ -37,23 +45,23 @@ class PickupPointsCards extends StatefulWidget {
 class _PickupPointsCardsState extends State<PickupPointsCards> {
   ReportServiceI get reportService => injector.get();
 
-  DriverInterfaceProvider get provider =>
-      Provider.of<DriverInterfaceProvider>(context, listen: true);
+  DriverInterfaceProvider getProvider(BuildContext _context, bool _listen) =>
+      Provider.of<DriverInterfaceProvider>(_context, listen: _listen);
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> pickupCardsList = provider.uncollectedPickupPoints
+    List<Widget> pickupCardsList = getProvider(context, true).uncollectedPickupPoints
         .map((pp) => PickupCard(
             pickupPoint: pp,
             functionality: PickupCardFunctionality.production(
                 onAccept: acceptItem, onReject: rejectItem)))
         .toList();
 
-    List<Widget> inactiveList = provider.collectedPickupPoints
+    List<Widget> inactiveList = getProvider(context, true).collectedPickupPoints
         .map((pp) => InactiveCard(
               pickupPoint: pp,
-              activateFunc: provider.activateItem,
-              status: provider.pickupPointsStatusMap[pp]!,
+              activateFunc: getProvider(context, false).activateItem,
+              status: getProvider(context, true).pickupPointsStatusMap[pp]!,
             ))
         .toList();
     return ListView(children: [...pickupCardsList, ...inactiveList]);
@@ -61,7 +69,7 @@ class _PickupPointsCardsState extends State<PickupPointsCards> {
 
   Future<void> acceptItem(PickupPoint item) async {
     // await DB.ItemService().collectItem(item.item.id);
-    bool? rejected = await showDialog(
+    bool? accepted = await showDialog(
         context: context,
         builder: (context) => ChangeNotifierProvider(
               create: (context) => ReportDialogProvider(
@@ -69,12 +77,12 @@ class _PickupPointsCardsState extends State<PickupPointsCards> {
               child: const ReportDialog(),
             ));
 
-    if (rejected == true) {
+    if (accepted == true) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('האיסוף הושלם'),
         duration: Duration(milliseconds: 1200),
       ));
-      await provider.acceptItem(item);
+      await getProvider(context, false).acceptItem(item);
     }
     return;
   }
@@ -93,7 +101,7 @@ class _PickupPointsCardsState extends State<PickupPointsCards> {
         content: Text('האיסוף בוטל'),
         duration: Duration(milliseconds: 1200),
       ));
-      await provider.rejectItem(item);
+      await getProvider(context, false).rejectItem(item);
     }
   }
 }

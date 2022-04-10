@@ -5,6 +5,8 @@ import 'package:nivapp/services/auth_service_i.dart';
 import 'package:nivapp/services/init_service.dart';
 import 'package:nivapp/services/inventory_service.dart';
 import 'package:nivapp/services/inventory_service_i.dart';
+import 'package:nivapp/services/report_service.dart';
+import 'package:nivapp/services/report_service_i.dart';
 import 'package:nivapp/services/routes_service.dart';
 import 'package:nivapp/services/routes_service_i.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,7 +23,9 @@ Injector ProductionModule() {
   injector.map<InitService>((i) => InitService(), isSingleton: true);
 
   injector.map<InventoryServiceI>((i) => InventoryService(), isSingleton: true);
-  injector.map<RoutesServiceI>((i) => RoutesService(i.get<InventoryService>()),
+  injector.map<RoutesServiceI>((i) => RoutesService(i.get<InventoryServiceI>()),
       isSingleton: true);
+  injector.map<ReportServiceI>((i) => ReportService(), isSingleton: true);
+
   return injector;
 }

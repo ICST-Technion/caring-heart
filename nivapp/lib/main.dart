@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_simple_dependency_injection/injector.dart';
+import 'package:nivapp/driver_interface/driver_interface.dart';
+import 'package:nivapp/easy_future_builder.dart';
 import 'package:nivapp/production_module.dart';
 import 'package:nivapp/services/auth_service_i.dart';
 import 'package:nivapp/services/init_service.dart';
+import 'package:nivapp/widgets/login.dart';
 
 late final Injector injector;
+
 void main() {
   injector = ProductionModule();
   runApp(const MyApp());
@@ -17,30 +21,23 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'NIVAPP',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.pink,
       ),
       initialRoute: '/',
       routes: {
-        '/': (c) => Container(),
+        '/': (c) => Container(child: Text("דף הבית")),
         // When navigating to the "/" route, build the FirstScreen widget.
         '/planner': (context) => MyHomePage(
               title: 'תכנון מסלול',
               getHomePage: () => Container(),
             ),
         // When navigating to the "/second" route, build the SecondScreen widget.
-        '/drivers': (context) =>
-            MyHomePage(title: 'איסוף תרומות', getHomePage: () => Container()),
+        '/drivers': (context) => easyFutureBuilder(
+            future: injector.get<InitService>().init(),
+            doneBuilder: (context, result) =>
+                Login(redirection: (authService) => const DriverInterface())),
       },
     );
   }

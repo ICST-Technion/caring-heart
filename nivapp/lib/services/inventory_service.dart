@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nivapp/item_spec.dart';
 
 class InventoryService implements InventoryServiceI {
+  InventoryService();
   /// returns item by its id.
   /// Items stuff
   @override

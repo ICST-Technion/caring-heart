@@ -29,13 +29,13 @@ class ReportDialog extends StatefulWidget {
 }
 
 class _ReportDialogState extends State<ReportDialog> {
-  ReportDialogProvider get provider =>
-      Provider.of<ReportDialogProvider>(context, listen: true);
+  ReportDialogProvider getProvider(_context, _listen) =>
+      Provider.of<ReportDialogProvider>(_context, listen: _listen);
 
   @override
   Widget build(BuildContext context) {
     final commentsInput = TextField(
-      onChanged: provider.setComments,
+      onChanged: getProvider(context, true).setComments,
       keyboardType: TextInputType.multiline,
       decoration: const InputDecoration(
         labelText: 'הערות',
@@ -44,25 +44,25 @@ class _ReportDialogState extends State<ReportDialog> {
     );
 
     final List<Widget> widgets = [commentsInput];
-    if (provider.type.isCollect()) {
+    if (getProvider(context, true).type.isCollect()) {
       final autoComplete = TypeAheadField(
           textFieldConfiguration: const TextFieldConfiguration(
               autofocus: true,
               decoration: InputDecoration(
                   labelText: 'חפש פריט', icon: Icon(Icons.add_circle_outline))),
-          suggestionsCallback: provider.getItemsSuggestion,
+          suggestionsCallback: getProvider(context, false).getItemsSuggestion,
           itemBuilder: (context, String item) => ListTile(
                 title: Text(item),
               ),
-          onSuggestionSelected: provider.onSuggestionSelected);
+          onSuggestionSelected: getProvider(context, false).onSuggestionSelected);
       widgets.add(autoComplete);
-      widgets.addAll(_itemsCheckboxes(provider.inventoryItemsSelection!));
+      widgets.addAll(_itemsCheckboxes(getProvider(context, true).inventoryItemsSelection!));
     }
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: AlertDialog(
-        title: Text('דיווח איסוף ב' + provider.pickupPoint.item.address),
+        title: Text('דיווח איסוף ב' + getProvider(context, true).pickupPoint.item.address),
         scrollable: true,
         content: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -71,7 +71,7 @@ class _ReportDialogState extends State<ReportDialog> {
         actions: [
           TextButton(
               onPressed: () async {
-                await provider.reportCurrentSelectedItems();
+                await getProvider(context, false).reportCurrentSelectedItems();
                 Navigator.of(context).pop(true);
               },
               child: const Text('אשר'))
@@ -86,7 +86,7 @@ class _ReportDialogState extends State<ReportDialog> {
               title: Text(itemEntry.key),
               value: itemEntry.value,
               onChanged: (isSelected) =>
-                  provider.changeItemSelection(itemEntry.key, isSelected),
+                  getProvider(context, false).changeItemSelection(itemEntry.key, isSelected),
             ))
         .toList();
   }
