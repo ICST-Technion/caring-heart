@@ -20,7 +20,8 @@ Injector ProductionModule() {
       isSingleton: true);
   injector.map<InitService>((i) => InitService(), isSingleton: true);
 
-  injector.map<InventoryServiceI>((i) => InventoryService());
-  injector.map<RoutesServiceI>((i) => RoutesService(i.get<InventoryService>()));
+  injector.map<InventoryServiceI>((i) => InventoryService(), isSingleton: true);
+  injector.map<RoutesServiceI>((i) => RoutesService(i.get<InventoryService>()),
+      isSingleton: true);
   return injector;
 }
