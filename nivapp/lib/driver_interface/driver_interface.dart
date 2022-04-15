@@ -21,7 +21,7 @@ class DriverInterface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return easyFutureBuilder<List<PickupPoint>>(
-        future: routesService.getItems(getDay: () => DateTime(2021,12,22)),
+        future: routesService.getItems(), //getDay: () => DateTime(2021,12,22)),
         doneBuilder: (context, todaysRoute) => ChangeNotifierProvider(
             create: (context) => DriverInterfaceProvider(
                 todaysRoute, injector.get<ReportServiceI>()),
@@ -50,21 +50,26 @@ class _PickupPointsCardsState extends State<PickupPointsCards> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> pickupCardsList = getProvider(context, true).uncollectedPickupPoints
+    List<Widget> pickupCardsList = getProvider(context, true)
+        .uncollectedPickupPoints
         .map((pp) => PickupCard(
             pickupPoint: pp,
             functionality: PickupCardFunctionality.production(
                 onAccept: acceptItem, onReject: rejectItem)))
         .toList();
 
-    List<Widget> inactiveList = getProvider(context, true).collectedPickupPoints
+    List<Widget> inactiveList = getProvider(context, true)
+        .collectedPickupPoints
         .map((pp) => InactiveCard(
               pickupPoint: pp,
               activateFunc: getProvider(context, false).activateItem,
               status: getProvider(context, true).pickupPointsStatusMap[pp]!,
             ))
         .toList();
-    return ListView(children: [...pickupCardsList, ...inactiveList]);
+    if (inactiveList.length + pickupCardsList.length > 0) {
+      return ListView(children: [...pickupCardsList, ...inactiveList]);
+    }
+    return Center(child: Text("אין פריטים להיום."));
   }
 
   Future<void> acceptItem(PickupPoint item) async {

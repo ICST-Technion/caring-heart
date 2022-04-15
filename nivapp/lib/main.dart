@@ -29,12 +29,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'NIVAPP',
+      color: Colors.pink,
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
       initialRoute: '/',
       routes: {
-        '/': (c) => Container(child: Text("דף הבית")),
+        '/': (c) => Scaffold(body: Center(child: Text("דף הבית"))),
         // When navigating to the "/" route, build the FirstScreen widget.
         '/planner': (context) => MyHomePage(
               title: 'תכנון מסלול',

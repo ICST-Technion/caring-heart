@@ -1,19 +1,22 @@
 // TODO change
 import 'package:flutter/material.dart';
 
-Widget _waitingBuilder() => Center(
-      child:
-          Column(mainAxisAlignment: MainAxisAlignment.center, children: const [
-        CircularProgressIndicator(),
-        Text(
-          "טוען נתונים...",
-          textDirection: TextDirection.rtl,
-        )
-      ]),
+Widget _waitingBuilder() => Scaffold(
+      body: Center(
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              CircularProgressIndicator(),
+              Text(
+                "טוען נתונים...",
+                textDirection: TextDirection.rtl,
+              )
+            ]),
+      ),
     );
 
 // TODO change
-Widget _errorBuilder(String err) => Center(child: Text(err));
+Widget _errorBuilder(String err) => Scaffold(body: Center(child: Text(err)));
 
 FutureBuilder easyFutureBuilder<T>(
     {required Future<T> future,
