@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_simple_dependency_injection/injector.dart';
 import 'package:nivapp/driver_interface/driver_interface.dart';
 import 'package:nivapp/easy_future_builder.dart';
+import 'package:nivapp/offline_mock_module.dart';
 import 'package:nivapp/production_module.dart';
 import 'package:nivapp/services/auth_service_i.dart';
 import 'package:nivapp/services/init_service.dart';
@@ -10,7 +11,13 @@ import 'package:nivapp/widgets/login.dart';
 late final Injector injector;
 
 void main() {
-  injector = ProductionModule();
+  const offline = false;
+  if (offline) {
+    injector = OfflineMockModule();
+  } else {
+    injector = ProductionModule();
+  }
+
   runApp(const MyApp());
 }
 
