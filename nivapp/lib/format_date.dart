@@ -1,4 +1,4 @@
-formatDate(DateTime date) {
+String formatDate(DateTime date) {
   return date.year.toString() +
       '-' +
       date.month.toString() +
