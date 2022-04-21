@@ -38,7 +38,7 @@ class RoutePlanner extends StatelessWidget {
 }
 
 class RoutePlannerUI extends StatefulWidget {
-  var isLoading = false;
+  bool isLoading = false;
 
   RoutePlannerUI({Key? key, required this.title}) : super(key: key);
 
@@ -140,7 +140,7 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
     );
   }
 
-  Widget getItem(context, idx) {
+  Widget getItem(BuildContext context, int idx) {
     return Card(
         elevation: 0,
         child: Center(
@@ -248,11 +248,11 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
         child: Center(child: Container()));
   }
 
-  ExpandedSizedTextBox(text) {
+  Widget ExpandedSizedTextBox(String text) {
     return Expanded(child: SizedTextBox(text));
   }
 
-  Widget SizedTextBox(text) {
+  Widget SizedTextBox(String text) {
     return SizedBox(
         width: Logic.ScreenSize(context).width / 12,
         height: Logic.ScreenSize(context).height / 20,
@@ -265,7 +265,7 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
         )));
   }
 
-  sortColumn(sort) {
+  void sortColumn(sort) {
     _isAscending = !_isAscending;
     Logic.getRouteProvider(context, false).Sort(sort, _isAscending);
   }
