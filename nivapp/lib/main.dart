@@ -4,6 +4,7 @@ import 'package:nivapp/driver_interface/driver_interface.dart';
 import 'package:nivapp/easy_future_builder.dart';
 import 'package:nivapp/offline_mock_module.dart';
 import 'package:nivapp/production_module.dart';
+import 'package:nivapp/route_planner/route_planner.dart';
 import 'package:nivapp/services/auth_service_i.dart';
 import 'package:nivapp/services/init_service.dart';
 import 'package:nivapp/widgets/login.dart';
@@ -37,10 +38,10 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (c) => Scaffold(body: Center(child: Text("דף הבית"))),
         // When navigating to the "/" route, build the FirstScreen widget.
-        '/planner': (context) => MyHomePage(
-              title: 'תכנון מסלול',
-              getHomePage: () => Container(),
-            ),
+        '/planner': (context) => easyFutureBuilder(
+            future: injector.get<InitService>().init(),
+            doneBuilder: (context, result) =>
+                Login(redirection: (authService) => const RoutePlanner())),
         // When navigating to the "/second" route, build the SecondScreen widget.
         '/drivers': (context) => easyFutureBuilder(
             future: injector.get<InitService>().init(),

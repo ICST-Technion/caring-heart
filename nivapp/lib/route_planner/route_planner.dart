@@ -5,26 +5,32 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nivapp/easy_future_builder.dart';
 import 'package:nivapp/item_spec.dart';
+import 'package:nivapp/logic.dart';
 import 'package:nivapp/main.dart';
+import 'package:nivapp/route_planner/route_dialog.dart';
 import 'package:nivapp/route_planner/route_planner_provider.dart';
+import 'package:nivapp/route_planner/selected_item_list.dart';
 import 'package:nivapp/services/auth_service_i.dart';
 import 'package:nivapp/services/inventory_service_i.dart';
 import 'package:nivapp/services/routes_service_i.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 
+import 'date_utility.dart';
+
 class RoutePlanner extends StatelessWidget {
   const RoutePlanner({Key? key}) : super(key: key);
 
   InventoryServiceI get inventoryService => injector.get();
-
+  RoutesServiceI get routeService => injector.get();
+  
   @override
   Widget build(BuildContext context) {
     return easyFutureBuilder<List<Item>>(
         future: inventoryService.getCheckedItems(),
         //getDay: () => DateTime(2021,12,22)),
         doneBuilder: (context, List<Item> _itemList) => ChangeNotifierProvider(
-            create: (context) => RoutePlannerProvider(
+            create: (context) => RoutePlannerProvider(routeService,
                 itemList: _itemList.map((e) => Tuple2(false, e)).toList(),
                 selectedItems: []),
             child: RoutePlannerUI(title: "תכנון מסלול")));
@@ -47,25 +53,22 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
   DateTime selectedDate = DateTime.now();
   TextEditingController ctrl = TextEditingController();
 
-  RoutePlannerProvider getProvider(BuildContext _context, bool _listen) =>
-      Provider.of<RoutePlannerProvider>(_context, listen: _listen);
-
   @override
   void initState() {
-    ctrl.text = Logic.formatDate(DateTime.now());
+    ctrl.text = DateUtil.formatDate(DateTime.now());
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Logic.getProvider(context, false).loadNewRoute(selectedDate, notify: false);
+    // Logic.getRouteProvider(context, false).loadNewRoute(selectedDate, notify: false);
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Scaffold(appBar: MyAppBar(), body: RoutePlanner()),
+      child: Scaffold(appBar: AppBar(title: Text("תכנון מסלול")), body: RoutePlanner()),
     );
   }
 
-  AppBar MyAppBar() {
+  /*AppBar MyAppBar() {
     if (!widget.auth.remember) {
       return AppBar(title: Text(widget.title));
     }
@@ -79,7 +82,7 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
           },
           icon: Icon(Icons.logout))
     ]);
-  }
+  }*/
 
   Widget RoutePlanner() {
     return SizedBox(
@@ -87,15 +90,15 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
       height: Logic.ScreenSize(context).height,
       child: Scaffold(
         floatingActionButton: FloatingActionButton(
-            tooltip: 'שליחה',
-            child: Icon(Icons.send),
+            tooltip: 'בחירת שעות',
+            child: Icon(Icons.more_time_rounded),
             onPressed: () {
-              RouteDialogFuncs(context: context, selectedDate: selectedDate)
+              RouteDialog(context: context, selectedDate: selectedDate)
                   .ShowRouteDialog();
             }),
         body: SingleChildScrollView(
           child: Column(children: [
-            Logic.getProvider(context, true).isLoading
+            Logic.getRouteProvider(context, true).isLoading
                 ? LinearProgressIndicator(minHeight: 9)
                 : SizedBox(),
             DateBtn(),
@@ -129,7 +132,7 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
             height: Logic.ScreenSize(context).height / 2.6,
             child: ListView.builder(
                 shrinkWrap: true,
-                itemCount: Logic.getProvider(context, true).itemList.length,
+                itemCount: Logic.getRouteProvider(context, true).itemList.length,
                 itemBuilder: (context, idx) => getItem(context, idx)),
           ),
         ),
@@ -181,7 +184,7 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
   }
 
   Widget ItemInfo(int index) {
-    Item item = Logic.getProvider(context, true).itemList[index].item2;
+    Item item = Logic.getRouteProvider(context, true).itemList[index].item2;
     Map info = {
       0: item.name,
       1: item.address,
@@ -201,7 +204,7 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
               height: Logic.ScreenSize(context).height / 20,
               child: Center(
                 child: Text(
-                  Logic.formatDate(value),
+                  DateUtil.formatDate(value),
                   overflow: TextOverflow.fade,
                   softWrap: false,
                 ),
@@ -230,9 +233,9 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
     });
     textBoxes.insert(0, Builder(builder: (newContext) {
       return Switch(
-          value: Logic.getProvider(newContext, true).itemList[index].item1,
+          value: Logic.getRouteProvider(newContext, true).itemList[index].item1,
           onChanged: (value) {
-            Logic.getProvider(context, false).SelectItemAt(index);
+            Logic.getRouteProvider(context, false).SelectItemAt(index);
           });
     }));
     return Row(children: textBoxes);
@@ -264,7 +267,7 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
 
   sortColumn(sort) {
     _isAscending = !_isAscending;
-    Logic.getProvider(context, false).Sort(sort, _isAscending);
+    Logic.getRouteProvider(context, false).Sort(sort, _isAscending);
   }
 
   Widget DateBtn() {
@@ -290,8 +293,8 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
                   lastDate: DateTime.now().add(Duration(days: 365)));
               setState(() {
                 selectedDate = date!;
-                ctrl.text = Logic.formatDate(selectedDate);
-                Logic.getProvider(context, false).loadNewRoute(date);
+                ctrl.text = DateUtil.formatDate(selectedDate);
+                Logic.getRouteProvider(context, false).loadNewRoute(date);
               });
             },
             child: Text('שינוי התאריך')),

@@ -8,7 +8,7 @@ class RoutePlannerProvider with ChangeNotifier {
   List<Tuple2<bool, Item>> itemList;
   List<PickupPoint> selectedItems;
   bool isLoading = false;
-  RoutesServiceI _routeService;
+  final RoutesServiceI _routeService;
 
   RoutePlannerProvider(this._routeService,
       {required this.itemList, required this.selectedItems});
@@ -66,9 +66,13 @@ class RoutePlannerProvider with ChangeNotifier {
     return selectedItems;
   }
 
-  moveSelectedItemAt(prev, next) {
+  void moveSelectedItemAt(prev, next) {
     final item = selectedItems.removeAt(prev);
     selectedItems.insert(next, item);
     notifyListeners();
+  }
+
+  Future<void> addCurrentRouteToDate(DateTime date) async {
+    await _routeService.addRouteByItemList(selectedItems, date);
   }
 }

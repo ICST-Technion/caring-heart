@@ -33,13 +33,13 @@ class _LoginState extends State<Login> {
   }
 
   Widget loginForm() {
-    return MaterialApp(
-      home: Builder(builder: (context) {
+    return Scaffold(
+      body: Builder(builder: (context) {
         return Center(
             child: Directionality(
           textDirection: TextDirection.ltr,
           child: FlutterLogin(
-            theme: LoginTheme(pageColorLight: Colors.lightBlueAccent),
+            theme: LoginTheme(pageColorLight: Color.fromARGB(255, 255, 123, 215)),
             onLogin: (LoginData data) =>
                 _auth.signInWithEmailPassword(data.name, data.password),
             onSubmitAnimationCompleted: () {
