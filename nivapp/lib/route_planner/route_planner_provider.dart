@@ -4,17 +4,29 @@ import 'package:nivapp/pickup_point.dart';
 import 'package:nivapp/services/routes_service_i.dart';
 import 'package:tuple/tuple.dart';
 
+import 'date_utility.dart';
+
 class RoutePlannerProvider with ChangeNotifier {
-  List<Tuple2<bool, Item>> itemList;
-  List<PickupPoint> selectedItems;
+  late List<Tuple2<bool, Item>> itemList;
+  List<PickupPoint> selectedItems = [];
   bool isLoading = false;
   final RoutesServiceI _routeService;
 
-  RoutePlannerProvider(this._routeService,
-      {required this.itemList, required this.selectedItems});
+  bool _isAscending = true;
+  DateTime _selectedDate = DateTime.now();
+  DateTime get selectedDate => _selectedDate;
 
-  void Sort(int Function(Item, Item) sortFunc, bool isAscending) {
-    isAscending
+  TextEditingController _dateBtnTextCtrl = TextEditingController();
+  TextEditingController get dateBtnTextCtrl => _dateBtnTextCtrl;
+
+  RoutePlannerProvider(this._routeService, {required List<Item> itemList}) {
+    this.itemList = itemList.map((e) => Tuple2(false, e)).toList();
+    _dateBtnTextCtrl.text = DateUtil.formatDate(DateTime.now());
+  }
+
+  void Sort(int Function(Item, Item) sortFunc) {
+    _isAscending = !_isAscending;
+    _isAscending
         ? itemList.sort((a, b) => sortFunc(a.item2, b.item2))
         : itemList.sort((a, b) => sortFunc(b.item2, a.item2));
     notifyListeners();
@@ -39,7 +51,12 @@ class RoutePlannerProvider with ChangeNotifier {
     return selectedItems.any((element) => element.pickupTime == '');
   }
 
-  void loadNewRoute(DateTime date, {bool notify = true}) async {
+  Future<void> loadNewRoute(DateTime? date, {bool notify = true}) async {
+    if (date == null) {
+      return;
+    }
+    _selectedDate = date;
+    _dateBtnTextCtrl.text = DateUtil.formatDate(selectedDate);
     isLoading = true;
     if (notify) {
       notifyListeners();

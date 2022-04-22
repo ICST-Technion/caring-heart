@@ -1,7 +1,4 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
-
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:nivapp/easy_future_builder.dart';
 import 'package:nivapp/item_spec.dart';
@@ -10,11 +7,9 @@ import 'package:nivapp/main.dart';
 import 'package:nivapp/route_planner/route_dialog.dart';
 import 'package:nivapp/route_planner/route_planner_provider.dart';
 import 'package:nivapp/route_planner/selected_item_list.dart';
-import 'package:nivapp/services/auth_service_i.dart';
 import 'package:nivapp/services/inventory_service_i.dart';
 import 'package:nivapp/services/routes_service_i.dart';
 import 'package:provider/provider.dart';
-import 'package:tuple/tuple.dart';
 
 import 'date_utility.dart';
 
@@ -23,24 +18,21 @@ class RoutePlanner extends StatelessWidget {
 
   InventoryServiceI get inventoryService => injector.get();
   RoutesServiceI get routeService => injector.get();
-  
+
   @override
   Widget build(BuildContext context) {
     return easyFutureBuilder<List<Item>>(
         future: inventoryService.getCheckedItems(),
         //getDay: () => DateTime(2021,12,22)),
         doneBuilder: (context, List<Item> _itemList) => ChangeNotifierProvider(
-            create: (context) => RoutePlannerProvider(routeService,
-                itemList: _itemList.map((e) => Tuple2(false, e)).toList(),
-                selectedItems: []),
+            create: (context) =>
+                RoutePlannerProvider(routeService, itemList: _itemList),
             child: RoutePlannerUI(title: "תכנון מסלול")));
   }
 }
 
 class RoutePlannerUI extends StatefulWidget {
-  bool isLoading = false;
-
-  RoutePlannerUI({Key? key, required this.title}) : super(key: key);
+  const RoutePlannerUI({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -49,40 +41,15 @@ class RoutePlannerUI extends StatefulWidget {
 }
 
 class _RoutePlannerUIState extends State<RoutePlannerUI> {
-  bool _isAscending = true;
-  DateTime selectedDate = DateTime.now();
-  TextEditingController ctrl = TextEditingController();
-
-  @override
-  void initState() {
-    ctrl.text = DateUtil.formatDate(DateTime.now());
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     // Logic.getRouteProvider(context, false).loadNewRoute(selectedDate, notify: false);
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Scaffold(appBar: AppBar(title: Text("תכנון מסלול")), body: RoutePlanner()),
+      child: Scaffold(
+          appBar: AppBar(title: Text("תכנון מסלול")), body: RoutePlanner()),
     );
   }
-
-  /*AppBar MyAppBar() {
-    if (!widget.auth.remember) {
-      return AppBar(title: Text(widget.title));
-    }
-    return AppBar(title: Text(widget.title), actions: [
-      IconButton(
-          onPressed: () async {
-            await widget.auth.signOut();
-            Navigator.of(context).pushReplacement(MaterialPageRoute(
-              builder: (context) => Login(func: (a) => MyApp(auth: a)),
-            ));
-          },
-          icon: Icon(Icons.logout))
-    ]);
-  }*/
 
   Widget RoutePlanner() {
     return SizedBox(
@@ -93,7 +60,10 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
             tooltip: 'בחירת שעות',
             child: Icon(Icons.more_time_rounded),
             onPressed: () {
-              RouteDialog(context: context, selectedDate: selectedDate)
+              RouteDialog(
+                      context: context,
+                      selectedDate:
+                          Logic.getRouteProvider(context, false).selectedDate)
                   .ShowRouteDialog();
             }),
         body: SingleChildScrollView(
@@ -109,7 +79,6 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
             ),
             Divider(thickness: 1),
             SelectedList(context: context).SelectedItemList(true),
-            //MyMap()
           ]),
         ),
       ),
@@ -132,7 +101,8 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
             height: Logic.ScreenSize(context).height / 2.6,
             child: ListView.builder(
                 shrinkWrap: true,
-                itemCount: Logic.getRouteProvider(context, true).itemList.length,
+                itemCount:
+                    Logic.getRouteProvider(context, true).itemList.length,
                 itemBuilder: (context, idx) => getItem(context, idx)),
           ),
         ),
@@ -266,8 +236,7 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
   }
 
   void sortColumn(sort) {
-    _isAscending = !_isAscending;
-    Logic.getRouteProvider(context, false).Sort(sort, _isAscending);
+    Logic.getRouteProvider(context, false).Sort(sort);
   }
 
   Widget DateBtn() {
@@ -282,20 +251,18 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
                 readOnly: true,
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(border: OutlineInputBorder()),
-                controller: ctrl,
+                controller:
+                    Logic.getRouteProvider(context, false).dateBtnTextCtrl,
                 style: TextStyle(fontSize: 16))),
         TextButton(
             onPressed: () async {
               DateTime? date = await showDatePicker(
                   context: context,
-                  initialDate: selectedDate,
+                  initialDate:
+                      Logic.getRouteProvider(context, false).selectedDate,
                   firstDate: DateTime(2020, 1),
                   lastDate: DateTime.now().add(Duration(days: 365)));
-              setState(() {
-                selectedDate = date!;
-                ctrl.text = DateUtil.formatDate(selectedDate);
-                Logic.getRouteProvider(context, false).loadNewRoute(date);
-              });
+              await Logic.getRouteProvider(context, false).loadNewRoute(date);
             },
             child: Text('שינוי התאריך')),
       ],
