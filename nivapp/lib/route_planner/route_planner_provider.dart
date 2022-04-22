@@ -13,7 +13,7 @@ class RoutePlannerProvider with ChangeNotifier {
   RoutePlannerProvider(this._routeService,
       {required this.itemList, required this.selectedItems});
 
-  void Sort(sortFunc, bool isAscending) {
+  void Sort(int Function(Item, Item) sortFunc, bool isAscending) {
     isAscending
         ? itemList.sort((a, b) => sortFunc(a.item2, b.item2))
         : itemList.sort((a, b) => sortFunc(b.item2, a.item2));
