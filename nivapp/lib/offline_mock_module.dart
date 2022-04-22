@@ -24,10 +24,16 @@ MockInventoryServiceI getInventoryMock(List<Item> items) {
   return mock;
 }
 
-MockRoutesServiceI getRoutesMock(List<PickupPoint> pickupPoints) {
+/// creates a mock for RoutesServiceI that returns the same pickpup points for
+/// all dates, initialized with [initialPickupPoints].
+MockRoutesServiceI getSingleDayRoutesMock(
+    List<PickupPoint> initialPickupPoints) {
+  var points = initialPickupPoints;
   final mock = MockRoutesServiceI();
   when(mock.getItems(getDay: anyNamed("getDay")))
-      .thenAnswer((_) async => pickupPoints);
+      .thenAnswer((_) async => points);
+  when(mock.addRouteByItemList(any, any)).thenAnswer(
+      (realInvocation) async => points = realInvocation.positionalArguments[0]);
   return mock;
 }
 
@@ -74,7 +80,7 @@ Injector OfflineMockModule() {
 
   injector.map<InventoryServiceI>((i) => getInventoryMock(inventoryItems),
       isSingleton: true);
-  injector.map<RoutesServiceI>((i) => getRoutesMock(pickupPoints),
+  injector.map<RoutesServiceI>((i) => getSingleDayRoutesMock(pickupPoints),
       isSingleton: true);
   injector.map<ReportServiceI>((i) => MockReportServiceI(), isSingleton: true);
 
