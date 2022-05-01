@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_simple_dependency_injection/injector.dart';
 import 'package:nivapp/services/auth_service.dart';
@@ -15,6 +16,7 @@ Injector ProductionModule() {
   final injector = Injector();
 
   injector.map<FirebaseAuth>((injector) => FirebaseAuth.instance);
+  injector.map<FirebaseFirestore>((injector) => FirebaseFirestore.instance);
   injector
       .map<Future<SharedPreferences>>((i) => SharedPreferences.getInstance());
   injector.map<AuthServiceI>(
@@ -22,8 +24,9 @@ Injector ProductionModule() {
       isSingleton: true);
   injector.map<InitService>((i) => InitService(), isSingleton: true);
 
-  injector.map<InventoryServiceI>((i) => InventoryService(), isSingleton: true);
-  injector.map<RoutesServiceI>((i) => RoutesService(i.get<InventoryServiceI>()),
+  injector.map<InventoryServiceI>((i) => InventoryService(i.get()),
+      isSingleton: true);
+  injector.map<RoutesServiceI>((i) => RoutesService(i.get(), i.get()),
       isSingleton: true);
   injector.map<ReportServiceI>((i) => ReportService(), isSingleton: true);
 

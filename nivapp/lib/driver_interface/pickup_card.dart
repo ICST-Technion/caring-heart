@@ -5,12 +5,14 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../pickup_point.dart';
 
+
+
 Future<void> _callOnPress(PickupPoint pickupPoint) async {
-  launch('tel:${pickupPoint.item.phone}');
+  launch('tel:${pickupPoint.item.phone}'); // TODO: replace launch
 }
 
 Future<void> _openWazeOnPress(PickupPoint pickupPoint) async {
-  launch('https://waze.com/ul?q=${pickupPoint.item.address}');
+  launch('https://waze.com/ul?q=${pickupPoint.item.fullAddress}');
 }
 
 class PickupCardFunctionality {
@@ -128,7 +130,7 @@ class _PickupCardState extends State<PickupCard> {
     return Column(
       children: [
         ListTile(
-          title: Text('${item.item.name} - ${item.item.address}'),
+          title: Text('${item.item.name} - ${item.item.fullAddress}'),
           subtitle: Text(item.pickupTime),
           trailing: itemButtons(item),
         ),

@@ -7,7 +7,8 @@ import 'package:nivapp/item_spec.dart';
 
 class RoutesService implements RoutesServiceI {
   final InventoryServiceI inventoryService;
-  RoutesService(this.inventoryService);
+  final FirebaseFirestore firebaseFirestore;
+  RoutesService(this.inventoryService, this.firebaseFirestore);
 
   /// Returns the items in current day's route.
   /// new name option: getDailyRoute.
@@ -15,7 +16,7 @@ class RoutesService implements RoutesServiceI {
   Future<List<PickupPoint>> getItems(
       {DateTime Function() getDay = DateTime.now}) async {
     final day = getDay();
-    final route = FirebaseFirestore.instance.collection('routesTest');
+    final route = firebaseFirestore.collection('routesTest');
     return route
         .where('date', isEqualTo: formatDate(day))
         .get()
@@ -42,7 +43,7 @@ class RoutesService implements RoutesServiceI {
   Future<void> addRouteByItemList(List<PickupPoint> list, DateTime date) async {
     bool found = false;
     //check if a route already exists, and if so, update it
-    var ref = FirebaseFirestore.instance.collection('routesTest');
+    var ref = firebaseFirestore.collection('routesTest');
     var snapshot = await ref.where('date', isEqualTo: formatDate(date)).get();
     if (snapshot.docs.isNotEmpty) {
       await snapshot.docs[0].reference.set({
@@ -50,7 +51,7 @@ class RoutesService implements RoutesServiceI {
             .map((pickup) =>
                 {'itemID': pickup.item.id, 'time': pickup.pickupTime})
             .toList()
-      });
+      }, SetOptions(merge: true));
       found = true;
     }
     //if no doc was found, add a new one
