@@ -8,7 +8,7 @@ import '../pickup_report.dart';
 import '../services/report_service_i.dart';
 
 List<String> _searchContains(final String query, final List<String> items) {
-  return items.where((ii) => ii.contains(query.toLowerCase())).toList();
+  return items.where((ii) => query.toLowerCase().contains(ii)).toList();
 }
 
 class ReportDialogProvider with ChangeNotifier {
