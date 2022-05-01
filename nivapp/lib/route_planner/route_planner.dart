@@ -10,6 +10,7 @@ import 'package:nivapp/route_planner/selected_item_list.dart';
 import 'package:nivapp/services/inventory_service_i.dart';
 import 'package:nivapp/services/routes_service_i.dart';
 import 'package:provider/provider.dart';
+import 'package:collection/collection.dart';
 
 import 'date_utility.dart';
 
@@ -123,6 +124,7 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
 
   Widget HeadersInfo() {
     List titles = [
+      '   בחירה', //DOR SEE THIS PLEASE!
       'שם',
       'כתובת',
       'שכונה',
@@ -133,22 +135,25 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
       'הערות'
     ];
     List<Widget> textBoxes = [
-      SizedBox(width: Logic.ScreenSize(context).width / 30)
+      // SizedBox(width: Logic.ScreenSize(context).width / 30)
     ];
-    titles.forEach((element) {
-      textBoxes.add(Expanded(
-        child: SizedBox(
-            width: Logic.ScreenSize(context).width / 12,
-            height: Logic.ScreenSize(context).height / 20,
-            child: Center(
-              child: Text(
-                element,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-            )),
-      ));
+    // titles.fo
+    titles.forEachIndexed((i, element) {
+      Widget sizedBox = SizedBox(
+          width: Logic.ScreenSize(context).width / (i == 0 ? 30 : 12),
+          height: Logic.ScreenSize(context).height / 20,
+          child: Center(
+            child: Text(
+              element,
+              overflow: TextOverflow.fade,
+              softWrap: false,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ));
+      if (i != 0) {
+        sizedBox = Expanded(child: sizedBox);
+      }
+      textBoxes.add(sizedBox);
     });
     return Row(children: textBoxes);
   }
