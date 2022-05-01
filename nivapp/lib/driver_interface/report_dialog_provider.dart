@@ -15,6 +15,8 @@ class ReportDialogProvider with ChangeNotifier {
   final PickupPoint pickupPoint;
   final ReportDialogType type;
   LinkedHashMap<String, bool>? _inventoryItemsSelection;
+
+
   UnmodifiableMapView<String, bool>? get inventoryItemsSelection {
     if (_inventoryItemsSelection == null) return null;
     return UnmodifiableMapView(_inventoryItemsSelection!);
@@ -24,7 +26,7 @@ class ReportDialogProvider with ChangeNotifier {
   final ReportServiceI _reportService;
   String comments = '';
 
-  ReportDialogProvider(this.pickupPoint, this.type, this._reportService) {
+  ReportDialogProvider(this.pickupPoint, this.type, this._reportService) { // TODO: check this.
     final description = pickupPoint.item.description;
     if (type.isCollect()) {
       final initialItems = _searchContains(description, type.inventoryItems!);

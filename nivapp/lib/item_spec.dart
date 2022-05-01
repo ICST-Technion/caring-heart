@@ -81,6 +81,8 @@ class Item {
         phone: json.getNotNull('phone').toString());
   }
 
+  String get fullAddress => '${this.address}, ${this.city}';
+
   // @override
   // bool operator ==(Object other) {
   //   if (other is! Item) {

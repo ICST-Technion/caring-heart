@@ -12,7 +12,7 @@ import 'package:nivapp/widgets/login.dart';
 late final Injector injector;
 
 void main() {
-  const offline = false;
+  const offline = true;
   if (offline) {
     injector = OfflineMockModule();
   } else {
