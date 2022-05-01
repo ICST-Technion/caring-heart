@@ -15,17 +15,18 @@ class RoutePlannerProvider with ChangeNotifier {
   bool _isAscending = true;
   DateTime _selectedDate = DateTime.now();
 
-  bool isInitRoute = false;
-
   DateTime get selectedDate => _selectedDate;
 
   TextEditingController _dateBtnTextCtrl = TextEditingController();
 
   TextEditingController get dateBtnTextCtrl => _dateBtnTextCtrl;
 
-  RoutePlannerProvider(this._routeService, {required List<Item> itemList}) {
+  RoutePlannerProvider(this._routeService,
+      {required List<Item> itemList, required List<PickupPoint> route}) {
     this.itemList = itemList.map((e) => Tuple2(false, e)).toList();
     _dateBtnTextCtrl.text = DateUtil.formatDate(DateTime.now());
+    selectedItems = route;
+    this.itemList = getItemTupleListFromSelectedItems();
   }
 
   void Sort(int Function(Item, Item) sortFunc) {
@@ -47,13 +48,6 @@ class RoutePlannerProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> initRoute() async {
-    if (!isInitRoute) {
-      await loadNewRoute(DateTime.now(), notify: false);
-      isInitRoute = true;
-    }
-  }
-
   bool isSelectedEmpty() {
     return selectedItems.isEmpty;
   }
@@ -73,16 +67,20 @@ class RoutePlannerProvider with ChangeNotifier {
       notifyListeners();
     }
     selectedItems = await _routeService.getItems(getDay: () => date);
-    List<String> tempItemList = selectedItems.map((e) => e.item.id).toList();
-    itemList = itemList
-        .map((e) => (tempItemList.contains(e.item2.id))
-            ? Tuple2(true, e.item2)
-            : Tuple2(false, e.item2))
-        .toList();
+    itemList = getItemTupleListFromSelectedItems();
     isLoading = false;
     if (notify) {
       notifyListeners();
     }
+  }
+
+  getItemTupleListFromSelectedItems() {
+    List<String> tempItemList = selectedItems.map((e) => e.item.id).toList();
+    return itemList
+        .map((e) => (tempItemList.contains(e.item2.id))
+            ? Tuple2(true, e.item2)
+            : Tuple2(false, e.item2))
+        .toList();
   }
 
   void changePickupTimeAt(idx, time) {
