@@ -17,6 +17,7 @@ class RoutePlanner extends StatelessWidget {
   const RoutePlanner({Key? key}) : super(key: key);
 
   InventoryServiceI get inventoryService => injector.get();
+
   RoutesServiceI get routeService => injector.get();
 
   @override
@@ -43,12 +44,26 @@ class RoutePlannerUI extends StatefulWidget {
 class _RoutePlannerUIState extends State<RoutePlannerUI> {
   @override
   Widget build(BuildContext context) {
-    // Logic.getRouteProvider(context, false).loadNewRoute(selectedDate, notify: false);
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-          appBar: AppBar(title: Text("תכנון מסלול")), body: RoutePlanner()),
-    );
+    if (!Logic.getRouteProvider(context, true).isInitRoute) {
+      return easyFutureBuilder(
+          future: Logic.getRouteProvider(context, false).initRoute(),
+          doneBuilder: (context, result) {
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: Scaffold(
+                  appBar: AppBar(title: Text("תכנון מסלול")),
+                  body: RoutePlanner()),
+            );
+          });
+    }
+    else {
+      return Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+            appBar: AppBar(title: Text("תכנון מסלול")),
+            body: RoutePlanner()),
+      );
+    }
   }
 
   Widget RoutePlanner() {

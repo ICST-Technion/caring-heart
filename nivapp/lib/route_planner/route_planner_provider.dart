@@ -14,9 +14,13 @@ class RoutePlannerProvider with ChangeNotifier {
 
   bool _isAscending = true;
   DateTime _selectedDate = DateTime.now();
+
+  bool isInitRoute = false;
+
   DateTime get selectedDate => _selectedDate;
 
   TextEditingController _dateBtnTextCtrl = TextEditingController();
+
   TextEditingController get dateBtnTextCtrl => _dateBtnTextCtrl;
 
   RoutePlannerProvider(this._routeService, {required List<Item> itemList}) {
@@ -41,6 +45,13 @@ class RoutePlannerProvider with ChangeNotifier {
       selectedItems.removeWhere((e) => e.item.id == itemList[index].item2.id);
     }
     notifyListeners();
+  }
+
+  Future<void> initRoute() async {
+    if (!isInitRoute) {
+      await loadNewRoute(DateTime.now(), notify: false);
+      isInitRoute = true;
+    }
   }
 
   bool isSelectedEmpty() {
