@@ -4,12 +4,14 @@ import 'package:nivapp/easy_future_builder.dart';
 import 'package:nivapp/item_spec.dart';
 import 'package:nivapp/logic.dart';
 import 'package:nivapp/main.dart';
+import 'package:nivapp/pickup_point.dart';
 import 'package:nivapp/route_planner/route_dialog.dart';
 import 'package:nivapp/route_planner/route_planner_provider.dart';
 import 'package:nivapp/route_planner/selected_item_list.dart';
 import 'package:nivapp/services/inventory_service_i.dart';
 import 'package:nivapp/services/routes_service_i.dart';
 import 'package:provider/provider.dart';
+import 'package:tuple/tuple.dart';
 import 'package:collection/collection.dart';
 
 import 'date_utility.dart';
@@ -18,17 +20,28 @@ class RoutePlanner extends StatelessWidget {
   const RoutePlanner({Key? key}) : super(key: key);
 
   InventoryServiceI get inventoryService => injector.get();
+
   RoutesServiceI get routeService => injector.get();
+
+  Future<Tuple2<List<Item>, List<PickupPoint>>>
+      getItemsAndCurrentRoute() async {
+    List<Item> itemList = await inventoryService.getCheckedItems();
+    List<PickupPoint> routeItems = await routeService.getItems();
+    return Tuple2<List<Item>, List<PickupPoint>>(itemList, routeItems);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return easyFutureBuilder<List<Item>>(
-        future: inventoryService.getCheckedItems(),
+    return easyFutureBuilder<Tuple2<List<Item>, List<PickupPoint>>>(
+        future: getItemsAndCurrentRoute(),
         //getDay: () => DateTime(2021,12,22)),
-        doneBuilder: (context, List<Item> _itemList) => ChangeNotifierProvider(
-            create: (context) =>
-                RoutePlannerProvider(routeService, itemList: _itemList),
-            child: RoutePlannerUI(title: "תכנון מסלול")));
+        doneBuilder:
+            (context, Tuple2<List<Item>, List<PickupPoint>> _itemListTuple) =>
+                ChangeNotifierProvider(
+                    create: (context) => RoutePlannerProvider(routeService,
+                        itemList: _itemListTuple.item1,
+                        route: _itemListTuple.item2),
+                    child: RoutePlannerUI(title: "תכנון מסלול")));
   }
 }
 
@@ -44,7 +57,6 @@ class RoutePlannerUI extends StatefulWidget {
 class _RoutePlannerUIState extends State<RoutePlannerUI> {
   @override
   Widget build(BuildContext context) {
-    // Logic.getRouteProvider(context, false).loadNewRoute(selectedDate, notify: false);
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
