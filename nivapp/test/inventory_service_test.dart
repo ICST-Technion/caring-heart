@@ -40,13 +40,11 @@ void main() {
       final fakeFb = FakeFirebaseFirestore();
       var itemJson = getItem();
       final addedItem = await fakeFb.collection('inventoryTest').add(itemJson);
-      var _ = (await fakeFb.collection('inventoryTest').doc(addedItem.id).get())
-          .data();
+
       final inventory = InventoryService(fakeFb);
       var actual = await inventory.getItemByID(addedItem.id);
       var item = Item.fromJson(addedItem.id, itemJson);
       expect(actual, equals(item));
-      // expect(actual.date, equals(item.date));
     });
   });
 }
