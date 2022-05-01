@@ -3,13 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nivapp/item_spec.dart';
 
 class InventoryService implements InventoryServiceI {
-  InventoryService();
+  final FirebaseFirestore fbInstance;
+  InventoryService(this.fbInstance);
+
   /// returns item by its id.
   /// Items stuff
   @override
   Future<Item> getItemByID(String id) async {
     const collectionPath = 'inventoryTest';
-    final inventory = FirebaseFirestore.instance.collection(collectionPath);
+    final inventory = fbInstance.collection(collectionPath);
     final itemData = await inventory.doc(id).get();
     if (!itemData.exists) {
       throw Exception(
@@ -22,7 +24,7 @@ class InventoryService implements InventoryServiceI {
   /// Items stuff.
   @override
   Future<void> collectItem(id) async {
-    final route = FirebaseFirestore.instance.collection('inventoryTest');
+    final route = fbInstance.collection('inventoryTest');
     await route.doc(id).update({
       'isCollected': true,
     });
@@ -33,7 +35,7 @@ class InventoryService implements InventoryServiceI {
   @override
   Future<List<Item>> getCheckedItems() async {
     // TODO: might have bugs.
-    final ref = FirebaseFirestore.instance.collection('inventoryTest');
+    final ref = fbInstance.collection('inventoryTest');
     return ref
         .where('isCollected', isEqualTo: false)
         .get()
