@@ -5,12 +5,8 @@
   "targets": {
     "caring-heart-tech": {
       "hosting": {
-        "routePlanner": [
-          "plan-route"
-        ],
-        "drivers": [
-          "driver-pickup",
-          "pick-up"
+        "nivapp": [
+          "nivapp"
         ]
       }
     }
