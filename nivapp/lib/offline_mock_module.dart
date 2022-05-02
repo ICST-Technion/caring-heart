@@ -49,18 +49,18 @@ MockAuthServiceI getAuthSignedInMock() {
 DateTime getDateMock(int i) => DateTime(2030).add(Duration(hours: 12 * i));
 
 Item getItemMock(int i) => Item(
-    address: 'address$i',
+    address: 'long long address$i',
     floor: 'floor$i',
     apartment: 'apartment$i',
     neighborhood: 'neighborhood$i',
-    city: 'city$i',
+    city: 'long city$i',
     comments: 'comments$i',
     date: getDateMock(i),
     description: 'description$i',
     email: '$i@mail.com',
     isChecked: true,
     isCollected: false,
-    name: 'name',
+    name: 'like a very long name',
     id: i.toString(),
     phone: '0${500000000 + i}');
 
