@@ -35,7 +35,7 @@ class ReportDialogProvider with ChangeNotifier {
     if (type.isCollect()) {
       final initialItems = _searchContains(description, type.inventoryItems!);
       _inventoryItemsSelection = LinkedHashMap.fromEntries(
-          initialItems.map((ii) => MapEntry(ii, true)));
+          initialItems.map((ii) => MapEntry(ii, false)));
     }
   }
 
