@@ -8,14 +8,17 @@ import '../pickup_report.dart';
 import '../services/report_service_i.dart';
 
 List<String> _searchContains(final String query, final List<String> items) {
-  return items.where((ii) => query.toLowerCase().contains(ii)).toList();
+  return items
+      .where((item) =>
+          query.toLowerCase().contains(item) ||
+          query.toLowerCase().contains(item.split(' ')[0]))
+      .toList();
 }
 
 class ReportDialogProvider with ChangeNotifier {
   final PickupPoint pickupPoint;
   final ReportDialogType type;
   LinkedHashMap<String, bool>? _inventoryItemsSelection;
-
 
   UnmodifiableMapView<String, bool>? get inventoryItemsSelection {
     if (_inventoryItemsSelection == null) return null;
@@ -26,7 +29,8 @@ class ReportDialogProvider with ChangeNotifier {
   final ReportServiceI _reportService;
   String comments = '';
 
-  ReportDialogProvider(this.pickupPoint, this.type, this._reportService) { // TODO: check this.
+  ReportDialogProvider(this.pickupPoint, this.type, this._reportService) {
+    // TODO: check this.
     final description = pickupPoint.item.description;
     if (type.isCollect()) {
       final initialItems = _searchContains(description, type.inventoryItems!);
