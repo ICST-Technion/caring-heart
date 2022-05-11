@@ -85,9 +85,13 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
                 ? LinearProgressIndicator(minHeight: 9)
                 : SizedBox(),
             DateBtn(),
+            Text(
+              'מוצרים שלא נאספו ומוכנים לאיסוף',
+              style: TextStyle(fontSize: 20),
+            ),
             ItemList(),
             Text(
-              'המוצרים שבחרת:',
+              'המוצרים שבחרת',
               style: TextStyle(fontSize: 20),
             ),
             Divider(thickness: 1),
