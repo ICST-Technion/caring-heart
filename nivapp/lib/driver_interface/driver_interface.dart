@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nivapp/driver_interface/driver_interface_provider.dart';
+import 'package:nivapp/driver_interface/extract_phone_numbers.dart';
 import 'package:nivapp/driver_interface/item_names.dart';
 import 'package:nivapp/driver_interface/pickup_card.dart';
 import 'package:nivapp/driver_interface/report_dialog.dart';
@@ -53,9 +54,11 @@ class _PickupPointsCardsState extends State<PickupPointsCards> {
     List<Widget> pickupCardsList = getProvider(context, true)
         .uncollectedPickupPoints
         .map((pp) => PickupCard(
-            pickupPoint: pp,
-            functionality: PickupCardFunctionality.production(
-                onAccept: acceptItem, onReject: rejectItem)))
+              pickupPoint: pp,
+              functionality: PickupCardFunctionality.production(
+                  onAccept: acceptItem, onReject: rejectItem),
+              extractPhoneNumbers: injector.get(),
+            ))
         .toList();
 
     List<Widget> inactiveList = getProvider(context, true)

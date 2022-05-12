@@ -12,6 +12,8 @@ import 'package:nivapp/services/routes_service.dart';
 import 'package:nivapp/services/routes_service_i.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'driver_interface/extract_phone_numbers.dart';
+
 Injector ProductionModule() {
   final injector = Injector();
 
@@ -29,6 +31,7 @@ Injector ProductionModule() {
   injector.map<RoutesServiceI>((i) => RoutesService(i.get(), i.get()),
       isSingleton: true);
   injector.map<ReportServiceI>((i) => ReportService(), isSingleton: true);
+  injector.map<ExtractPhoneNumbers>((i) => ExtractPhoneNumbers());
 
   return injector;
 }

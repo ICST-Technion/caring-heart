@@ -11,6 +11,7 @@ import 'package:nivapp/services/inventory_service_i.dart';
 import 'package:nivapp/services/report_service_i.dart';
 import 'package:nivapp/services/routes_service_i.dart';
 
+import 'driver_interface/extract_phone_numbers.dart';
 import 'mock_definitions.mocks.dart';
 
 MockInventoryServiceI getInventoryMock(List<Item> items) {
@@ -62,7 +63,7 @@ Item getItemMock(int i) => Item(
     isCollected: false,
     name: 'like a very long name',
     id: i.toString(),
-    phone: '0${500000000 + i}');
+    phone: 'name$i - 0${500000000 + i}, name${i + 1} - 0${500000000 + i + 1}');
 
 Injector OfflineMockModule() {
   final injector = Injector();
@@ -82,6 +83,7 @@ Injector OfflineMockModule() {
   injector.map<RoutesServiceI>((i) => getSingleDayRoutesMock(pickupPoints),
       isSingleton: true);
   injector.map<ReportServiceI>((i) => MockReportServiceI(), isSingleton: true);
+  injector.map<ExtractPhoneNumbers>((i) => ExtractPhoneNumbers());
 
   return injector;
 }

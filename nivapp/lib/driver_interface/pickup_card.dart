@@ -1,14 +1,15 @@
 import 'package:expandable/expandable.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 // import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../pickup_point.dart';
+import 'extract_phone_numbers.dart';
+import 'package:collection/collection.dart';
 
-
-
-Future<void> _callOnPress(PickupPoint pickupPoint) async {
-  launch('tel:${pickupPoint.item.phone}'); // TODO: replace launch
+Future<void> _callOnPress(String phoneNumber) async {
+  launch('tel:${phoneNumber}'); // TODO: replace launch
 }
 
 Future<void> _openWazeOnPress(PickupPoint pickupPoint) async {
@@ -18,7 +19,7 @@ Future<void> _openWazeOnPress(PickupPoint pickupPoint) async {
 class PickupCardFunctionality {
   final Future<void> Function(PickupPoint pickupPoint) onAccept;
   final Future<void> Function(PickupPoint pickupPoint) onReject;
-  final Future<void> Function(PickupPoint pickupPoint) onCallButton;
+  final Future<void> Function(String phoneNumber) onCallButton;
   final Future<void> Function(PickupPoint pickupPoint) onNavigateButton;
 
   PickupCardFunctionality.custom(
@@ -43,7 +44,7 @@ class PickupCardFunctionality {
         logger('reject ${e.item}');
       },
       onCallButton: (e) async {
-        logger('call ${e.item}');
+        logger('call $e');
       },
       onNavigateButton: (e) async {
         logger('navigate ${e.item}');
@@ -55,11 +56,13 @@ class PickupCardFunctionality {
 class PickupCard extends StatefulWidget {
   final PickupPoint pickupPoint;
   final PickupCardFunctionality functionality;
-  PickupCard({
-    Key? key,
-    required this.pickupPoint,
-    required this.functionality,
-  }) : super(key: key);
+  final ExtractPhoneNumbers extractPhoneNumbers;
+  PickupCard(
+      {Key? key,
+      required this.pickupPoint,
+      required this.functionality,
+      required this.extractPhoneNumbers})
+      : super(key: key);
 
   @override
   _PickupCardState createState() => _PickupCardState();
@@ -174,13 +177,40 @@ class _PickupCardState extends State<PickupCard> {
   Widget itemButtons(PickupPoint pickupPoint) {
     final phone = pickupPoint.item.phone;
     final address = pickupPoint.item.address;
+    final phoneNumbersAndNames =
+        widget.extractPhoneNumbers(pickupPoint.item.phone);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-            splashRadius: 24,
-            onPressed: () => widget.functionality.onCallButton(pickupPoint),
-            icon: const Icon(Icons.phone, color: Colors.green)),
+        PopupMenuButton(
+          icon: const Icon(Icons.phone, color: Colors.green),
+          tooltip: '',
+          // shape: CircleBorder(side: BorderSide()),
+          itemBuilder: (ctx) => phoneNumbersAndNames.isEmpty
+              ? ([
+                  MyPopupMenuEntry(
+                      height: 20,
+                      child: SelectableText(
+                        pickupPoint.item.phone,
+                        textDirection: TextDirection.rtl,
+                      ))
+                ])
+              : phoneNumbersAndNames
+                  .map((phoneExtract) => PopupMenuItem(
+                      child: Text(
+                          "${phoneExtract.name} - ${phoneExtract.phoneNumber}"),
+                      onTap: () async {
+                        await widget.functionality
+                            .onCallButton(phoneExtract.phoneNumber);
+                      }))
+                  .toList(),
+          // onSelected: (a) => 1,
+          // child: Container(),
+        ),
+        // IconButton(
+        //     splashRadius: 24,
+        //     onPressed: () => widget.functionality.onCallButton(pickupPoint),
+        //     icon: const Icon(Icons.phone, color: Colors.green)),
         IconButton(
             splashRadius: 24,
             onPressed: () => widget.functionality.onNavigateButton(pickupPoint),
@@ -221,5 +251,68 @@ class _PickupCardState extends State<PickupCard> {
         ],
       ),
     );
+  }
+}
+
+// class PhoneText extends StatelessWidget {
+//   final String text;
+//   final ExtractPhoneNumbers extractPhoneNumbers;
+//   const PhoneText(
+//       {Key? key, required this.text, required this.extractPhoneNumbers})
+//       : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final phonesExtractions = extractPhoneNumbers(text);
+//     final phonesExtractionsWithDummyEnds = [
+//       PhoneNumberExtraction('', -1, -1),
+//       ...phonesExtractions,
+//       PhoneNumberExtraction('', text.length, text.length)
+//     ];
+//     final textsBetweenPhones =
+//         phonesExtractionsWithDummyEnds.skip(1).mapIndexed((index, pne) {
+//       final afterPrev =
+//           phonesExtractionsWithDummyEnds[index - 1].lastIndexInString + 1;
+//       return text.substring(afterPrev, pne.firstIndexInString);
+//     });
+//     return RichText(
+//         text: TextSpan(children: [
+//       // TextSpan(),
+//       TextSpan(
+//           text: text,
+//           style: new TextStyle(color: Colors.blue),
+//           recognizer: TapGestureRecognizer()
+//             ..onTap = () {
+//               launch(
+//                   'https://docs.flutter.io/flutter/services/UrlLauncher-class.html');
+//             })
+//     ]));
+//   }
+// }
+
+class MyPopupMenuEntry extends StatefulWidget implements PopupMenuEntry {
+  final Widget child;
+  @override
+  final double height;
+  // final ExtractPhoneNumbers extractPhoneNumbers;
+
+  const MyPopupMenuEntry({
+    Key? key,
+    required this.height,
+    required this.child,
+    // required this.extractPhoneNumbers
+  }) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _MyPopupMenuEntryState();
+
+  @override
+  bool represents(value) => true;
+}
+
+class _MyPopupMenuEntryState extends State<MyPopupMenuEntry> {
+  @override
+  Widget build(BuildContext context) {
+    return widget.child;
   }
 }
