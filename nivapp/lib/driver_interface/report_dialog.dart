@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:nivapp/driver_interface/positive_inc_dec_counter.dart';
 import 'package:nivapp/driver_interface/report_dialog_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -29,7 +30,7 @@ class ReportDialog extends StatefulWidget {
 }
 
 class _ReportDialogState extends State<ReportDialog> {
-  ReportDialogProvider getProvider(_context, _listen) =>
+  ReportDialogProvider getProvider(BuildContext _context, bool _listen) =>
       Provider.of<ReportDialogProvider>(_context, listen: _listen);
 
   @override
@@ -44,7 +45,8 @@ class _ReportDialogState extends State<ReportDialog> {
     );
 
     final List<Widget> widgets = [commentsInput];
-    if (getProvider(context, true).type.isCollect()) {
+    var collect = getProvider(context, true).type.isCollect();
+    if (collect) {
       final autoComplete = TypeAheadField(
           textFieldConfiguration: const TextFieldConfiguration(
               autofocus: true,
@@ -54,15 +56,18 @@ class _ReportDialogState extends State<ReportDialog> {
           itemBuilder: (context, String item) => ListTile(
                 title: Text(item),
               ),
-          onSuggestionSelected: getProvider(context, false).onSuggestionSelected);
+          onSuggestionSelected:
+              getProvider(context, false).onSuggestionSelected);
       widgets.add(autoComplete);
-      widgets.addAll(_itemsCheckboxes(getProvider(context, true).inventoryItemsSelection!));
+      widgets.addAll(_itemsInputs());
     }
-
+    // final isAcceptingDisabled =
+    // collect && getProvider(context, false).isMoreThanZeroItems;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: AlertDialog(
-        title: Text('דיווח איסוף ב' + getProvider(context, true).pickupPoint.item.address),
+        title: Text('דיווח איסוף ב' +
+            getProvider(context, true).pickupPoint.item.address),
         scrollable: true,
         content: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -70,24 +75,36 @@ class _ReportDialogState extends State<ReportDialog> {
         ),
         actions: [
           TextButton(
-              onPressed: () async {
-                await getProvider(context, false).reportCurrentSelectedItems();
-                Navigator.of(context).pop(true);
-              },
-              child: const Text('אשר'))
+              onPressed: getProvider(context, false).disableAccept
+                  ? null
+                  : () async {
+                      await getProvider(context, false)
+                          .reportCurrentSelectedItems();
+                      Navigator.of(context).pop(true);
+                    },
+              child: Text('אשר'))
         ],
       ),
     );
   }
 
-  List<Widget> _itemsCheckboxes(UnmodifiableMapView<String, bool> selections) {
-    return selections.entries
-        .map((itemEntry) => CheckboxListTile(
-              title: Text(itemEntry.key),
-              value: itemEntry.value,
-              onChanged: (isSelected) =>
-                  getProvider(context, false).changeItemSelection(itemEntry.key, isSelected),
-            ))
-        .toList();
+  List<Widget> _itemsInputs() {
+    return getProvider(context, false)
+        .inventoryItemsCount!
+        .entries
+        .map((entry) {
+      final itemName = entry.key;
+      final count = entry.value.value;
+      return Row(children: [
+        Text(itemName),
+        Spacer(),
+        PositiveIncDecCounter(
+            onPressPlus: () async =>
+                getProvider(context, false).addOneToItem(itemName),
+            onPressMinus: () async =>
+                getProvider(context, false).substractOneFromItem(itemName),
+            numberDisplay: count)
+      ]);
+    }).toList();
   }
 }

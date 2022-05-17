@@ -60,5 +60,19 @@ void main() {
       expect(rdp.allItems, ["a1 a2"]);
       // now the test part.
     });
+    test('does not report items with amount of 0', () async {
+      // PickupPoint mpp = MockPickupPoint();
+      // ReportDialogType rdt = ReportDialogType.collect(["item"]);
+      // ReportServiceI rs = MockReportServiceI();
+      // Item item = MockItem();
+
+      // when(item.description).thenReturn("a1, b2");
+      // when(mpp.item).thenReturn(item);
+      // ReportDialogProvider rdp = ReportDialogProvider(mpp, rdt, rs);
+      // rdp.addOneToItem("item");
+      // rdp.substractOneFromItem("item");
+      // await rdp.reportCurrentSelectedItems();
+      // verify(rs.)
+    });
   });
 }

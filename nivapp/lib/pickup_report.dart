@@ -1,3 +1,9 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:math';
+
+import 'package:flutter/foundation.dart';
+import 'dart:collection';
+
 enum PickupReportStatus { uncollected, collected, canceled }
 
 extension _Shorten on PickupReportStatus {
@@ -10,7 +16,13 @@ class PickupReport {
   late final String itemID;
   late final PickupReportStatus status;
   late final String? comments;
-  late final List<String>? collectedItems;
+  late final Map<String, int>? collectedItems;
+  PickupReport({
+    required this.itemID,
+    required this.status,
+    this.comments,
+    this.collectedItems,
+  });
 
   PickupReport._(
       {required this.itemID,
@@ -38,7 +50,7 @@ class PickupReport {
   factory PickupReport.collected(
       {required String itemID,
       required String comments,
-      required List<String> collectedItems}) {
+      required Map<String, int> collectedItems}) {
     return PickupReport._(
         itemID: itemID,
         status: PickupReportStatus.collected,
@@ -86,6 +98,25 @@ class PickupReport {
     return PickupReport.collected(
         itemID: itemID,
         comments: json['comments'],
-        collectedItems: json['collectedItems']);
+        collectedItems: (json['collectedItems'] as Map<String, int>));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is PickupReport &&
+        other.itemID == itemID &&
+        other.status == status &&
+        other.comments == comments &&
+        mapEquals(other.collectedItems, collectedItems);
+  }
+
+  @override
+  int get hashCode {
+    return itemID.hashCode ^
+        status.hashCode ^
+        comments.hashCode ^
+        collectedItems.toString().hashCode;
   }
 }
