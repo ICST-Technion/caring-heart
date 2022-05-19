@@ -41,7 +41,7 @@ class Logic {
     return a.date.compareTo(b.date);
   }
 
-  static bool areTimesLegal(List<PickupPoint> list) {
+  /*static bool areTimesLegal(List<PickupPoint> list) {
     for (int i = 0; i < list.length - 1; i++) {
       String t1 = list[i].pickupTime, t2 = list[i + 1].pickupTime;
       final h1 = int.parse(t1.split(':')[0]), m1 = int.parse(t1.split(':')[1]);
@@ -51,5 +51,5 @@ class Logic {
       }
     }
     return true;
-  }
+  }*/
 }

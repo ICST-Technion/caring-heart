@@ -1,13 +1,16 @@
+import 'package:flutter/material.dart';
 import 'package:nivapp/services/inventory_service_i.dart';
 import 'package:nivapp/services/routes_service_i.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nivapp/pickup_point.dart';
 import 'package:nivapp/format_date.dart';
 import 'package:nivapp/item_spec.dart';
+import 'package:time_range_picker/time_range_picker.dart';
 
 class RoutesService implements RoutesServiceI {
   final InventoryServiceI inventoryService;
   final FirebaseFirestore firebaseFirestore;
+
   RoutesService(this.inventoryService, this.firebaseFirestore);
 
   /// Returns the items in current day's route.
@@ -32,7 +35,7 @@ class RoutesService implements RoutesServiceI {
       // print(pickupPointsJson);
       for (final pickup in pickupPointsJson) {
         final Item item = await inventoryService.getItemByID(pickup['itemID']);
-        pickupPoints.add(PickupPoint(item: item, pickupTime: pickup['time']));
+        pickupPoints.add(PickupPoint.fromString(item, pickup['time']));
       }
     }
     return pickupPoints;
@@ -48,8 +51,10 @@ class RoutesService implements RoutesServiceI {
     if (snapshot.docs.isNotEmpty) {
       await snapshot.docs[0].reference.set({
         'items': list
-            .map((pickup) =>
-                {'itemID': pickup.item.id, 'time': pickup.pickupTime})
+            .map((pickup) => {
+                  'itemID': pickup.item.id,
+                  'time': formatTimeRange(pickup.pickupTime)
+                })
             .toList()
       }, SetOptions(merge: true));
       found = true;
@@ -59,8 +64,10 @@ class RoutesService implements RoutesServiceI {
       ref.add({
         'date': formatDate(date),
         'items': list
-            .map((pickup) =>
-                {'itemID': pickup.item.id, 'time': pickup.pickupTime})
+            .map((pickup) => {
+                  'itemID': pickup.item.id,
+                  'time': formatTimeRange(pickup.pickupTime)
+                })
             .toList()
       });
     }

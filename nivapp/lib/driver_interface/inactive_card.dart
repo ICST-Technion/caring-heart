@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:expandable/expandable.dart';
+import 'package:nivapp/format_date.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../pickup_point.dart';
@@ -61,7 +62,7 @@ class _InactiveCardState extends State<InactiveCard> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Text(address, style: const TextStyle(fontSize: 20)),
-            Text(time, style: const TextStyle(fontSize: 16))
+            Text(formatTimeRange(time), style: const TextStyle(fontSize: 16))
           ],
         )
       ],

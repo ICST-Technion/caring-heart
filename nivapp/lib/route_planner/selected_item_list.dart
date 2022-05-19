@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:nivapp/format_date.dart';
 import 'package:nivapp/item_spec.dart';
 import 'package:nivapp/logic.dart';
 import 'package:nivapp/route_planner/date_utility.dart';
+import 'package:time_range_picker/time_range_picker.dart';
 
 class SelectedList {
   BuildContext context;
@@ -19,7 +21,8 @@ class SelectedList {
                 Logic.getRouteProvider(context, true).selectedItems[idx].item,
                 idx,
                 draggable),
-            itemCount: Logic.getRouteProvider(context, true).selectedItems.length,
+            itemCount:
+                Logic.getRouteProvider(context, true).selectedItems.length,
             onReorder: (prev, current) {
               if (current > prev) {
                 current = current - 1;
@@ -103,42 +106,86 @@ class SelectedList {
           ReorderableDragStartListener(
               index: idx, child: const Icon(Icons.drag_handle)));
     } else {
-      textBoxes.insert(0, SelectTimeBtn(idx));
+      textBoxes.insert(0, SelectTimeRangeBtn(idx));
     }
     return Directionality(
         textDirection: TextDirection.rtl, child: Row(children: textBoxes));
   }
 
-  Widget SelectTimeBtn(int idx) {
-    List<String> options = [];
-    String time =
+  Widget SelectTimeRangeBtn(int idx) {
+    TimeRange? timeRange =
         Logic.getRouteProvider(context, true).selectedItems[idx].pickupTime;
-    for (int h = 8; h <= 18; h++) {
-      for (int m = 0; m < 60; m += 15) {
-        String minutes = m == 0 ? '00' : m.toString();
-        String hours = (h / 10 == 0) ? '0' + h.toString() : h.toString();
-        options.add('$hours:$minutes');
-      }
-    }
+
     return Container(
-      height: Logic.ScreenSize(context).height / 21,
-      width: Logic.ScreenSize(context).width / 15,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: DropdownButtonFormField(
-        alignment: Alignment.center,
-        value: time.isEmpty
-            ? null
-            : Logic.getRouteProvider(context, true).selectedItems[idx].pickupTime,
-        items: options.map((String time) {
-          return DropdownMenuItem<String>(
-            value: time,
-            child: Text(time),
-          );
-        }).toList(),
-        hint: const Text('בחירת שעה', style: TextStyle(color: Colors.pinkAccent)),
-        onChanged: (String? value) {
-          Logic.getRouteProvider(context, false).changePickupTimeAt(idx, value!);
-        },
+        margin: const EdgeInsets.only(bottom: 8, top: 8),
+        child: ElevatedButton(
+            onPressed: () async {
+              TimeRange value = await showDialog(
+                  context: context,
+                  builder: (context) => TimeRangePickerDialog(timeRange));
+
+              Logic.getRouteProvider(context, false)
+                  .changePickupTimeAt(idx, value);
+            },
+            child: timeRange == null
+                ? const Text('בחירת שעות')
+                : Text(formatTimeRange(Logic.getRouteProvider(context, true)
+                    .selectedItems[idx]
+                    .pickupTime))));
+  }
+
+  TimeRangePickerDialog(TimeRange? timeRange) {
+    TimeOfDay? start = timeRange == null
+        ? TimeOfDay.fromDateTime(DateTime.now())
+        : timeRange.startTime;
+    TimeOfDay? end = timeRange == null
+        ? TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 1)))
+        : timeRange.endTime;
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          width: MediaQuery.of(context).size.width / 5,
+          height: 450,
+          child: TimeRangePicker(
+            interval: const Duration(minutes: 15),
+            snap: true,
+            rotateLabels: true,
+            fromText: 'משעה',
+            toText: 'עד שעה',
+            start: start,
+            end: end,
+            labels: ["0", "3", "6", "9", "12", "15", "18", "21"]
+                .asMap()
+                .entries
+                .map((e) {
+              return ClockLabel.fromIndex(idx: e.key, length: 8, text: e.value);
+            }).toList(),
+            labelOffset: -30,
+            hideButtons: true,
+            onStartChange: (_start) {
+              start = _start;
+            },
+            onEndChange: (_end) {
+              end = _end;
+            },
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+              child: Text('ביטול'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              }),
+          TextButton(
+            child: Text('אישור'),
+            onPressed: () {
+              Navigator.of(context)
+                  .pop(TimeRange(startTime: start!, endTime: end!));
+            },
+          ),
+        ],
       ),
     );
   }

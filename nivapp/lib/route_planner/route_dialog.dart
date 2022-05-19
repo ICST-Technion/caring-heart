@@ -68,14 +68,14 @@ class RouteDialog {
                     title: Text('התאריך שנבחר אינו חוקי',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.red))));
-          } else {
+          } /*else {
             showDialog(
                 context: context,
                 builder: (context) => const AlertDialog(
                     title: Text('סדר השעות שנבחרו אינו חוקי',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.red))));
-          }
+          }*/
         },
         child: Icon(Icons.send));
   }
@@ -88,10 +88,10 @@ class RouteDialog {
     /*else if (Logic.compareDates(selectedDate, DateTime.now()) < 0) {
       return RouteDialogStatus.badDate;
     } */
-    else if (!Logic.areTimesLegal(
+    /*else if (!Logic.areTimesLegal(
         Logic.getRouteProvider(context, false).selectedItems)) {
       return RouteDialogStatus.badTimes;
-    }
+    }*/
     await Logic.getRouteProvider(context, false)
         .addCurrentRouteToDate(selectedDate);
     return RouteDialogStatus.success;

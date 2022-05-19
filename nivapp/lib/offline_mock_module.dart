@@ -1,15 +1,19 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_simple_dependency_injection/injector.dart';
 import 'package:mockito/mockito.dart';
 import 'package:nivapp/format_date.dart';
+
 // import 'cat.mocks.dart';
 import 'package:nivapp/item_spec.dart';
 import 'package:nivapp/pickup_point.dart';
 import 'package:nivapp/services/auth_service_i.dart';
 import 'package:nivapp/services/init_service.dart';
+
 // import 'package:nivapp/offline_mock_module.mocks.dart';
 import 'package:nivapp/services/inventory_service_i.dart';
 import 'package:nivapp/services/report_service_i.dart';
 import 'package:nivapp/services/routes_service_i.dart';
+import 'package:time_range_picker/time_range_picker.dart';
 
 import 'driver_interface/extract_phone_numbers.dart';
 import 'mock_definitions.mocks.dart';
@@ -75,7 +79,11 @@ Injector OfflineMockModule() {
 
   final pickupPoints = Iterable<int>.generate(10)
       .map((i) => PickupPoint(
-          item: getItemMock(i), pickupTime: formatDate(getDateMock(i))))
+          item: getItemMock(i),
+          pickupTime: TimeRange(
+              startTime: TimeOfDay.fromDateTime(getDateMock(i)),
+              endTime: TimeOfDay.fromDateTime(
+                  getDateMock(i).add(const Duration(hours: 2))))))
       .toList();
 
   injector.map<InventoryServiceI>((i) => getInventoryMock(inventoryItems),

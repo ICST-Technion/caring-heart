@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nivapp/item_spec.dart';
 import 'package:nivapp/pickup_point.dart';
 import 'package:nivapp/services/routes_service_i.dart';
+import 'package:time_range_picker/time_range_picker.dart';
 import 'package:tuple/tuple.dart';
 
 import 'date_utility.dart';
@@ -41,7 +42,7 @@ class RoutePlannerProvider with ChangeNotifier {
     itemList[index] = itemList[index].withItem1(!itemList[index].item1);
     if (itemList[index].item1) {
       selectedItems
-          .add(PickupPoint(item: itemList[index].item2, pickupTime: ""));
+          .add(PickupPoint(item: itemList[index].item2));
     } else {
       selectedItems.removeWhere((e) => e.item.id == itemList[index].item2.id);
     }
@@ -53,7 +54,7 @@ class RoutePlannerProvider with ChangeNotifier {
   }
 
   bool isThereEmptyPickupTime() {
-    return selectedItems.any((element) => element.pickupTime == '');
+    return selectedItems.any((element) => element.pickupTime == null);
   }
 
   Future<void> loadNewRoute(DateTime? date, {bool notify = true}) async {
@@ -83,9 +84,10 @@ class RoutePlannerProvider with ChangeNotifier {
         .toList();
   }
 
-  void changePickupTimeAt(idx, time) {
+  void changePickupTimeAt(int idx, TimeRange time) {
     selectedItems[idx] =
-        PickupPoint(item: selectedItems[idx].item, pickupTime: time!);
+        PickupPoint(item: selectedItems[idx].item, pickupTime: time);
+    notifyListeners();
   }
 
   List<PickupPoint> getSelectedItems() {

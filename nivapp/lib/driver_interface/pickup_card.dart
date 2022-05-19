@@ -1,6 +1,7 @@
 import 'package:expandable/expandable.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:nivapp/format_date.dart';
 // import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -134,7 +135,7 @@ class _PickupCardState extends State<PickupCard> {
       children: [
         ListTile(
           title: Text('${item.item.name} - ${item.item.fullAddress}'),
-          subtitle: Text(item.pickupTime),
+          subtitle: Text(formatTimeRange(item.pickupTime)),
           trailing: itemButtons(item),
         ),
         Padding(
@@ -167,7 +168,7 @@ class _PickupCardState extends State<PickupCard> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Text(address, style: const TextStyle(fontSize: 20)),
-            Text(time, style: const TextStyle(fontSize: 16))
+            Text(formatTimeRange(time), style: const TextStyle(fontSize: 16))
           ],
         )
       ],
