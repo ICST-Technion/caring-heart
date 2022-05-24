@@ -3,6 +3,7 @@ import 'package:nivapp/format_date.dart';
 import 'package:nivapp/item_spec.dart';
 import 'package:nivapp/logic.dart';
 import 'package:nivapp/route_planner/date_utility.dart';
+import 'package:nivapp/route_planner/item_info.dart';
 import 'package:time_range_picker/time_range_picker.dart';
 
 extension on TimeOfDay {
@@ -69,52 +70,7 @@ class SelectedList {
   }
 
   Widget SelectedItemInfo(Item item, idx, bool draggable) {
-    Map info = {
-      0: item.name,
-      1: item.address,
-      2: item.neighborhood,
-      3: item.city,
-      4: item.phone,
-      5: item.description,
-      6: item.date,
-      7: item.comments,
-    };
-    List<Widget> textBoxes = [];
-    info.forEach((key, value) {
-      if (value.runtimeType == DateTime) {
-        textBoxes.add(Expanded(
-          child: SizedBox(
-              width: Logic.ScreenSize(context).width / 12,
-              height: Logic.ScreenSize(context).height / 20,
-              child: Center(
-                child: Text(
-                  DateUtil.formatDate(value),
-                  overflow: TextOverflow.fade,
-                  softWrap: false,
-                ),
-              )),
-        ));
-      } else {
-        textBoxes.add(Expanded(
-          child: SizedBox(
-              width: Logic.ScreenSize(context).width / 12,
-              height: Logic.ScreenSize(context).height / 20,
-              child: Center(
-                child: Tooltip(
-                  textStyle: const TextStyle(fontSize: 14),
-                  decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 200, 200, 200)),
-                  message: value,
-                  child: Text(
-                    value,
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                  ),
-                ),
-              )),
-        ));
-      }
-    });
+    List<Widget> textBoxes = ItemInfoTextBoxes(item, context);
     if (draggable) {
       textBoxes.insert(
           0,

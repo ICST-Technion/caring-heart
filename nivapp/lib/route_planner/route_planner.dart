@@ -5,6 +5,7 @@ import 'package:nivapp/item_spec.dart';
 import 'package:nivapp/logic.dart';
 import 'package:nivapp/main.dart';
 import 'package:nivapp/pickup_point.dart';
+import 'package:nivapp/route_planner/item_info.dart';
 import 'package:nivapp/route_planner/route_dialog.dart';
 import 'package:nivapp/route_planner/route_planner_provider.dart';
 import 'package:nivapp/route_planner/selected_item_list.dart';
@@ -153,7 +154,8 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
       'כתובת',
       'שכונה',
       'עיר',
-      'טלפון',
+      'טלפון 1',
+      'טלפון 2',
       'תיאור',
       'תאריך',
       'הערות'
@@ -184,52 +186,7 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
 
   Widget ItemInfo(int index) {
     Item item = Logic.getRouteProvider(context, true).itemList[index].item2;
-    Map info = {
-      0: item.name,
-      1: item.address,
-      2: item.neighborhood,
-      3: item.city,
-      4: item.phone,
-      5: item.description,
-      6: item.date,
-      7: item.comments,
-    };
-    List<Widget> textBoxes = [];
-    info.forEach((key, value) {
-      if (value.runtimeType == DateTime) {
-        textBoxes.add(Expanded(
-          child: SizedBox(
-              width: Logic.ScreenSize(context).width / 12,
-              height: Logic.ScreenSize(context).height / 20,
-              child: Center(
-                child: Text(
-                  DateUtil.formatDate(value),
-                  overflow: TextOverflow.fade,
-                  softWrap: false,
-                ),
-              )),
-        ));
-      } else {
-        textBoxes.add(Expanded(
-          child: SizedBox(
-              width: Logic.ScreenSize(context).width / 12,
-              height: Logic.ScreenSize(context).height / 20,
-              child: Center(
-                child: Tooltip(
-                  textStyle: TextStyle(fontSize: 14),
-                  decoration:
-                      BoxDecoration(color: Color.fromARGB(255, 200, 200, 200)),
-                  message: value,
-                  child: Text(
-                    value,
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                  ),
-                ),
-              )),
-        ));
-      }
-    });
+    List<Widget> textBoxes = ItemInfoTextBoxes(item, context);
     textBoxes.insert(0, Builder(builder: (newContext) {
       return Switch(
           value: Logic.getRouteProvider(newContext, true).itemList[index].item1,
@@ -274,9 +231,14 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
       children: [
         SizedBox(height: 10),
         Container(
-            height: Logic.ScreenSize(context).height / 15,
+            height: Logic.ScreenSize(context).height / 17,
             width: Logic.ScreenSize(context).width / 10,
             child: TextButton(
+                style: ButtonStyle(
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4.0),
+                            side: BorderSide(color: Colors.pinkAccent)))),
                 onPressed: () async {
                   DateTime? date = await showDatePicker(
                       context: context,
@@ -287,15 +249,16 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
                   await Logic.getRouteProvider(context, false)
                       .loadNewRoute(date);
                 },
-                child: TextField(textAlignVertical: TextAlignVertical.bottom,
+                child: TextField(
+                    textAlignVertical: TextAlignVertical.center,
                     enabled: false,
                     mouseCursor: SystemMouseCursors.click,
                     readOnly: true,
                     textAlign: TextAlign.center,
-                    decoration: InputDecoration(border: OutlineInputBorder()),
+                    decoration: InputDecoration(border: InputBorder.none),
                     controller:
                         Logic.getRouteProvider(context, false).dateBtnTextCtrl,
-                    style: TextStyle(fontSize: 16)))),
+                    style: TextStyle(fontSize: 18)))),
         SizedBox(height: 4)
       ],
     );
