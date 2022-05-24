@@ -29,7 +29,7 @@ class DriverInterface extends StatelessWidget {
             child: Directionality(
               textDirection: TextDirection.rtl,
               child: Scaffold(
-                appBar: AppBar(title: Text("איסוף תרומות")),
+                appBar: AppBar(title: const Text("איסוף תרומות"), automaticallyImplyLeading: false),
                 body: Center(child: PickupPointsCards()),
               ),
             )));
