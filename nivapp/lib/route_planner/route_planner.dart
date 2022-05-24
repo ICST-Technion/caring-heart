@@ -60,7 +60,13 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-          appBar: AppBar(title: Text("תכנון מסלול")), body: RoutePlanner()),
+        appBar: AppBar(
+          title: Center(child: Text("תכנון מסלול")),
+          automaticallyImplyLeading: false,
+        ),
+        body: RoutePlanner(),
+        floatingActionButton: ChooseTimesFAB(),
+      ),
     );
   }
 
@@ -68,38 +74,40 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
     return SizedBox(
       width: Logic.ScreenSize(context).width,
       height: Logic.ScreenSize(context).height,
-      child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-            tooltip: 'בחירת שעות',
-            child: Icon(Icons.more_time_rounded),
-            onPressed: () {
-              RouteDialog(
-                      context: context,
-                      selectedDate:
-                          Logic.getRouteProvider(context, false).selectedDate)
-                  .ShowRouteDialog();
-            }),
-        body: SingleChildScrollView(
-          child: Column(children: [
-            Logic.getRouteProvider(context, true).isLoading
-                ? LinearProgressIndicator(minHeight: 9)
-                : SizedBox(),
-            DateBtn(),
-            Text(
-              'מוצרים שלא נאספו ומוכנים לאיסוף',
-              style: TextStyle(fontSize: 20),
-            ),
-            ItemList(),
-            Text(
-              'המוצרים שבחרת',
-              style: TextStyle(fontSize: 20),
-            ),
-            Divider(thickness: 1),
-            SelectedList(context: context).SelectedItemList(true),
-          ]),
-        ),
+      child: SingleChildScrollView(
+        child: Column(children: [
+          Logic.getRouteProvider(context, true).isLoading
+              ? LinearProgressIndicator(minHeight: 9)
+              : SizedBox(),
+          DateBtn(),
+          Text(
+            'מוצרים שלא נאספו ומוכנים לאיסוף',
+            style: TextStyle(fontSize: 20),
+          ),
+          ItemList(),
+          Text(
+            'המוצרים שבחרת',
+            style: TextStyle(fontSize: 20),
+          ),
+          Divider(thickness: 1),
+          SelectedList(context: context).SelectedItemList(true),
+        ]),
       ),
     );
+  }
+
+  FloatingActionButton ChooseTimesFAB() {
+    return FloatingActionButton.extended(
+        label: Text('בחירת שעות'),
+        isExtended: true,
+        icon: Icon(Icons.more_time_rounded),
+        onPressed: () {
+          RouteDialog(
+                  context: context,
+                  selectedDate:
+                      Logic.getRouteProvider(context, false).selectedDate)
+              .ShowRouteDialog();
+        });
   }
 
   Widget ItemList() {
@@ -268,24 +276,27 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
         Container(
             height: Logic.ScreenSize(context).height / 15,
             width: Logic.ScreenSize(context).width / 10,
-            child: TextFormField(
-                readOnly: true,
-                textAlign: TextAlign.center,
-                decoration: InputDecoration(border: OutlineInputBorder()),
-                controller:
-                    Logic.getRouteProvider(context, false).dateBtnTextCtrl,
-                style: TextStyle(fontSize: 16))),
-        TextButton(
-            onPressed: () async {
-              DateTime? date = await showDatePicker(
-                  context: context,
-                  initialDate:
-                      Logic.getRouteProvider(context, false).selectedDate,
-                  firstDate: DateTime(2020, 1),
-                  lastDate: DateTime.now().add(Duration(days: 365)));
-              await Logic.getRouteProvider(context, false).loadNewRoute(date);
-            },
-            child: Text('שינוי התאריך')),
+            child: TextButton(
+                onPressed: () async {
+                  DateTime? date = await showDatePicker(
+                      context: context,
+                      initialDate:
+                          Logic.getRouteProvider(context, false).selectedDate,
+                      firstDate: DateTime(2020, 1),
+                      lastDate: DateTime.now().add(Duration(days: 365)));
+                  await Logic.getRouteProvider(context, false)
+                      .loadNewRoute(date);
+                },
+                child: TextField(textAlignVertical: TextAlignVertical.bottom,
+                    enabled: false,
+                    mouseCursor: SystemMouseCursors.click,
+                    readOnly: true,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(border: OutlineInputBorder()),
+                    controller:
+                        Logic.getRouteProvider(context, false).dateBtnTextCtrl,
+                    style: TextStyle(fontSize: 16)))),
+        SizedBox(height: 4)
       ],
     );
   }

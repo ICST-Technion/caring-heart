@@ -47,7 +47,7 @@ class RouteDialog {
 
   // ignore: non_constant_identifier_names
   Widget SubmitBtn() {
-    return FloatingActionButton(
+    return FloatingActionButton.extended(
         onPressed: () async {
           final status = await SendRoute();
           if (status == RouteDialogStatus.success) {
@@ -77,7 +77,8 @@ class RouteDialog {
                         style: TextStyle(color: Colors.red))));
           }*/
         },
-        child: Icon(Icons.send));
+        label: Text('שליחה'),
+        icon: const Icon(Icons.send));
   }
 
   // ignore: non_constant_identifier_names

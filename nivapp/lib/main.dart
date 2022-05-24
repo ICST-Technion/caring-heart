@@ -29,6 +29,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'NIVAPP',
       color: Colors.pink,
       theme: ThemeData(
@@ -36,7 +37,7 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (c) => Scaffold(body: Center(child: Text("דף הבית"))),
+        '/': (c) => homePageUI(c),
         // When navigating to the "/" route, build the FirstScreen widget.
         '/planner': (context) => easyFutureBuilder(
             future: injector.get<InitService>().init(),
@@ -49,6 +50,29 @@ class MyApp extends StatelessWidget {
                 Login(redirection: (authService) => const DriverInterface())),
       },
     );
+  }
+
+  Scaffold homePageUI(BuildContext context) {
+    return Scaffold(
+              body: Center(
+                child: Container(
+                  width: 500,
+                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+                ElevatedButton(
+                    child: Text("תכנון מסלול"),
+                    onPressed: () {
+                      Navigator.of(context).pushReplacementNamed("/planner");
+                    }),
+                ElevatedButton(
+                    child: Text("ממשק נהגים"),
+                    onPressed: () {
+                      Navigator.of(context).pushReplacementNamed("/drivers");
+                    })
+            ],
+          ),
+                ),
+              ));
   }
 }
 

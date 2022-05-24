@@ -5,10 +5,25 @@ import 'package:nivapp/logic.dart';
 import 'package:nivapp/route_planner/date_utility.dart';
 import 'package:time_range_picker/time_range_picker.dart';
 
+extension on TimeOfDay {
+  TimeOfDay add({int hour = 0, int minute = 0}) {
+    return replacing(hour: this.hour + hour, minute: this.minute + minute);
+  }
+}
+
 class SelectedList {
   BuildContext context;
+  List<TextEditingController> timeControllers = [];
 
-  SelectedList({required this.context});
+  SelectedList({required this.context}) {
+    final items = Logic.getRouteProvider(context, true).selectedItems;
+    timeControllers = items
+        .map((e) => TextEditingController(
+            text: e.pickupTime == null
+                ? 'בחירת שעות'
+                : formatTimeRange(e.pickupTime)))
+        .toList();
+  }
 
   // ignore: non_constant_identifier_names
   Widget SelectedItemList(bool draggable) {
@@ -118,29 +133,35 @@ class SelectedList {
 
     return Container(
         margin: const EdgeInsets.only(bottom: 8, top: 8),
+        width: Logic.ScreenSize(context).width / 13,
+        height: Logic.ScreenSize(context).height / 27,
         child: ElevatedButton(
             onPressed: () async {
-              TimeRange value = await showDialog(
+              TimeRange range = await showDialog(
                   context: context,
-                  builder: (context) => TimeRangePickerDialog(timeRange));
-
+                  builder: (context) => TimeRangePickerDialog(timeRange, idx));
               Logic.getRouteProvider(context, false)
-                  .changePickupTimeAt(idx, value);
+                  .changePickupTimeAt(idx, range);
             },
-            child: timeRange == null
-                ? const Text('בחירת שעות')
-                : Text(formatTimeRange(Logic.getRouteProvider(context, true)
-                    .selectedItems[idx]
-                    .pickupTime))));
+            child: TextField(
+                enabled: false,
+                textAlign: TextAlign.center,
+                textAlignVertical: TextAlignVertical.bottom,
+                mouseCursor: SystemMouseCursors.click,
+                decoration: const InputDecoration(border: InputBorder.none),
+                style: const TextStyle(color: Colors.white),
+                controller: timeControllers[idx],
+                readOnly: true)));
   }
 
-  TimeRangePickerDialog(TimeRange? timeRange) {
-    TimeOfDay? start = timeRange == null
-        ? TimeOfDay.fromDateTime(DateTime.now())
-        : timeRange.startTime;
-    TimeOfDay? end = timeRange == null
-        ? TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 1)))
-        : timeRange.endTime;
+  TimeRangePickerDialog(TimeRange? timeRange, int idx) {
+    TimeOfDay now = TimeOfDay.fromDateTime(DateTime.now());
+    if (now.minute % 15 != 0) {
+      now = now.add(
+          minute: now.minute % 15 < 8 ? -(now.minute % 15) : 15 - now.minute % 15);
+    }
+    TimeOfDay? start = timeRange == null ? now : timeRange.startTime;
+    TimeOfDay? end = timeRange == null ? now.add(hour: 1) : timeRange.endTime;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: AlertDialog(
@@ -181,8 +202,9 @@ class SelectedList {
           TextButton(
             child: Text('אישור'),
             onPressed: () {
-              Navigator.of(context)
-                  .pop(TimeRange(startTime: start!, endTime: end!));
+              final range = TimeRange(startTime: start!, endTime: end!);
+              timeControllers[idx].text = formatTimeRange(range);
+              Navigator.of(context).pop(range);
             },
           ),
         ],
