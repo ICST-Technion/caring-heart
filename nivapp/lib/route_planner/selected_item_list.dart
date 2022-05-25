@@ -89,8 +89,8 @@ class SelectedList {
 
     return Container(
         margin: const EdgeInsets.only(bottom: 8, top: 8),
-        width: Logic.ScreenSize(context).width / 13,
-        height: Logic.ScreenSize(context).height / 27,
+        width: Logic.ScreenSize(context).width / 12,
+        height: Logic.ScreenSize(context).height / 23,
         child: ElevatedButton(
             onPressed: () async {
               TimeRange range = await showDialog(
@@ -114,7 +114,8 @@ class SelectedList {
     TimeOfDay now = TimeOfDay.fromDateTime(DateTime.now());
     if (now.minute % 15 != 0) {
       now = now.add(
-          minute: now.minute % 15 < 8 ? -(now.minute % 15) : 15 - now.minute % 15);
+          minute:
+              now.minute % 15 < 8 ? -(now.minute % 15) : 15 - now.minute % 15);
     }
     TimeOfDay? start = timeRange == null ? now : timeRange.startTime;
     TimeOfDay? end = timeRange == null ? now.add(hour: 1) : timeRange.endTime;
