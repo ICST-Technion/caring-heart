@@ -14,6 +14,8 @@ import 'package:nivapp/services/routes_service_i.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:collection/collection.dart';
+import 'package:calendar_view/calendar_view.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 import 'date_utility.dart';
 
@@ -42,13 +44,14 @@ class RoutePlanner extends StatelessWidget {
                     create: (context) => RoutePlannerProvider(routeService,
                         itemList: _itemListTuple.item1,
                         route: _itemListTuple.item2),
-                    child: RoutePlannerUI(title: "תכנון מסלול")));
+                    child: CalendarControllerProvider(
+                        controller: EventController(),
+                        child: RoutePlannerUI(title: "תכנון מסלול"))));
   }
 }
 
 class RoutePlannerUI extends StatefulWidget {
   const RoutePlannerUI({Key? key, required this.title}) : super(key: key);
-
   final String title;
 
   @override
@@ -56,6 +59,8 @@ class RoutePlannerUI extends StatefulWidget {
 }
 
 class _RoutePlannerUIState extends State<RoutePlannerUI> {
+  final GlobalKey<WeekViewState> _calendarKey = GlobalKey<WeekViewState>();
+
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -65,12 +70,161 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
           title: Center(child: Text("תכנון מסלול")),
           automaticallyImplyLeading: false,
         ),
-        body: RoutePlanner(),
+        body: Center(child: RoutePlanner2()),
         floatingActionButton: ChooseTimesFAB(),
       ),
     );
   }
 
+  Widget RoutePlanner2() {
+    return SizedBox(
+        width: Logic.ScreenSize(context).width,
+        height: Logic.ScreenSize(context).height,
+        child: PrettyCalendar());
+  }
+
+  Widget PrettyCalendar() {
+    return SfCalendar(
+      view: CalendarView.week,
+      showNavigationArrow: true,
+      headerStyle: CalendarHeaderStyle(textAlign: TextAlign.center),
+      timeSlotViewSettings: TimeSlotViewSettings(
+          startHour: 9,
+          endHour: 16,
+          timeFormat: "HH:mm",
+          timeInterval: Duration(minutes: 15),
+          nonWorkingDays: <int>[DateTime.friday, DateTime.saturday]),
+      onTap: (details) { openChooseItemDialog(); },
+    );
+  }
+
+  void openChooseItemDialog() {}
+
+
+  /*Widget WeeklyCalendar() {
+    final event = CalendarEventData(
+      title: "Eventy centy",
+      date: DateTime(2022, 5, 15),
+      event: "Event 1",
+    );
+
+    CalendarControllerProvider.of(context).controller.add(event);
+
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: WeekView(
+        key: _calendarKey,
+        controller: CalendarControllerProvider.of(context).controller,
+        timeLineBuilder: (date) {
+          String str = (date.hour < 10)
+              ? "0" + date.hour.toString()
+              : date.hour.toString();
+          str += ":";
+          str += (date.minute < 10)
+              ? "0" + date.minute.toString()
+              : date.minute.toString();
+          return Text(str);
+        },
+        weekDayBuilder: (date) {
+          return Text(DateUtil.getHebrewWeekday(date.weekday) +
+              "\n" +
+              date.day.toString() +
+              "/" +
+              date.month.toString());
+        },
+        weekPageHeaderBuilder: (date1, date2) {
+          return CalendarHeader(date1, date2);
+        },
+        // To display live time line in all pages in week view.
+        // width of week view.
+        minDay: DateTime(2020),
+        maxDay: DateTime.now().add(Duration(days: 365)),
+        initialDay: DateTime.now(),
+        heightPerMinute: 0.5,
+        // height occupied by 1 minute time span.
+        eventArranger: SideEventArranger(),
+        // To define how simultaneous events will be arranged.
+        onEventTap: (events, date) => print(events),
+        onDateLongPress: (date) => print(date),
+        startDay: WeekDays.sunday,
+        // To change the first day of the week.
+        weekDays: [
+          WeekDays.sunday,
+          WeekDays.monday,
+          WeekDays.tuesday,
+          WeekDays.wednesday,
+          WeekDays.thursday
+        ],
+      ),
+    );
+  }
+
+  Widget CalendarHeader(DateTime startDate, DateTime endDate) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.lightBlue.withOpacity(0.5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: () {
+              _calendarKey.currentState?.previousPage();
+            },
+            splashColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+            icon: Icon(
+              Icons.chevron_left,
+              size: 30,
+              color: Colors.black,
+            ),
+          ),
+          Expanded(
+            child: InkWell(
+              onTap: () async {
+                final selectedDate = await showDatePicker(
+                  context: context,
+                  initialDate: startDate,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime.now().add(Duration(days: 365)),
+                );
+
+                if (selectedDate == null) return;
+                _calendarKey.currentState?.jumpToPage(DateTime(2020)
+                    .getWeekDifference(selectedDate, start: WeekDays.sunday));
+              },
+              child: Text(
+                DateUtil.dateRangeStringBuilder(startDate, endDate),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              _calendarKey.currentState?.nextPage();
+            },
+            splashColor: Colors.transparent,
+            focusColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+            icon: Icon(
+              Icons.chevron_right,
+              size: 30,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+*/
   Widget RoutePlanner() {
     return SizedBox(
       width: Logic.ScreenSize(context).width,
@@ -263,4 +417,5 @@ class _RoutePlannerUIState extends State<RoutePlannerUI> {
       ],
     );
   }
+
 }

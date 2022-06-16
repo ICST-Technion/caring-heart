@@ -18,4 +18,27 @@ class DateUtil {
     return d1.compareTo(d2);
   }
 
+  static String getHebrewWeekday(int day){
+    switch (day) {
+      case DateTime.sunday:
+        return "ראשון";
+      case DateTime.monday:
+        return "שני";
+      case DateTime.tuesday:
+        return "שלישי";
+      case DateTime.wednesday:
+        return "רביעי";
+      case DateTime.thursday:
+        return "חמישי";
+      case DateTime.friday:
+        return "שישי";
+      case DateTime.saturday:
+        return "שבת";
+    }
+    return "לא יודע";
+  }
+
+  static String dateRangeStringBuilder(DateTime date1, DateTime date2) {
+    return "מהתאריך " + formatDate(date1) + " עד התאריך " + formatDate(date2);
+  }
 }
