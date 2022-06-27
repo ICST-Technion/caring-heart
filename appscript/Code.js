@@ -27,6 +27,9 @@ function prettyItemsString(items){
   const headers = Object.keys(items[0]).join(' | ') + '\n'
   return headers + items.map(Object.values).map(arrValues => arrValues.join(' | ')).join('\n')
 }
+
+
+
 /**
  * @param {Event} e The onEdit event.
  */
@@ -34,6 +37,12 @@ function updateDatabaseOnEdit(e) {
   // Set a comment on the edited cell to indicate when it was changed.
   const range = e.range
   const row = range.getRow()
+  if (row == 1 || row ==2){
+    return;
+  }
+
+  Logger.log( JSON.stringify( e , null, 2 ) );
+
   const sheet = range.getSheet()
   const n_rows = range.getNumRows()
 
@@ -57,18 +66,36 @@ function updateDatabaseOnEdit(e) {
     return
   }
   const getItemsByAction = (actionType) => itemsAndAction.filter(({action: {type}}) => type == actionType)
-  const [deletes, updates, creates, continues] = ['delete', 'update', 'create', 'continue'].map(getItemsByAction)
+  const [deletes, updates, creates, continues,empties] = ['delete', 'update', 'create', 'continue', 'empty'].map(getItemsByAction)
   console.log({deletes, updates, creates, continues})
   const inventory = getInventory()
   const getKeyCell = (row) => sheet.getRange(row, constants.KEY_COL_IDX)
+  
+  const setRowColor = (row, color) => {
+    r = sheet.getRange(row,constants.FIRST_COL_IDX,1, constants.LAST_COL_IDX)
+    r.clearFormat()
+    r.setBackground(color)
+  }
+
+  continues.forEach(({item, row}) => {    
+    setRowColor(row,"yellow")
+    
+  })
+  empties.forEach(({item, row}) => {    
+    setRowColor(row,"lightgray")
+    
+  })
+
   updates.forEach(({key, item}) => {
     inventory.updateItem(key, item)
     SpreadsheetApp.getActive().toast('עודכן פריט!')
+    setRowColor(row,"white")
   })
   creates.forEach(({item, row}) => {
     const newKey = inventory.addItem(item)
     getKeyCell(row).setValue(newKey)
     SpreadsheetApp.getActive().toast('נוסף פריט חדש!')
+    setRowColor(row,"white")
   })
   if(deletes.length > 0){
     const rowsBottomToTop = deletes.map(d => d.row).sort().reverse()
@@ -107,3 +134,70 @@ function simpleDialog(title, text, yesAction, noAction, dialogMaker = uiDialogMa
     noAction()
   }
 }
+
+function createNewSheetByMonth(){
+  var date = new Date()
+  date = new Date(Utilities.formatDate(date, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "yyyy-MM-dd'T'HH:mm:ss"))
+  var month = date.getMonth() +1
+  var year = date.getFullYear() - 2000
+  var name = month.toString() + "/" + year.toString()
+  var source = SpreadsheetApp.getActiveSpreadsheet()
+  if (!source.getSheetByName(name)){
+
+  var sheet = source.getSheetByName("template")
+  var dest = sheet.copyTo(source)
+  dest.setName(name).activate()
+  
+  var rangesToProtect = ["A:B", "1:2"]
+  rangesToProtect.forEach((r) => {
+    dest.getRange(r).protect().removeEditor("levchash@levchash.co.il")
+  })
+  //dest.getRange("K3:K").setNumberFormat("dd/mm/yyy")
+  
+  //dest.activate()
+  //dest.getRange("A:B").protect().removeEditor("");
+  //dest.getRange("1:1").protect();
+  }
+  
+}
+
+
+function createNewSheetByMonthTest(){
+  var date = new Date()
+  date = new Date(Utilities.formatDate(date, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "yyyy-MM-dd'T'HH:mm:ss"))
+  //console.log(Utilities.formatDate(date, SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone(), "yyyy-MM-dd"))
+  //console.log(date)
+  //return
+  var month = date.getMonth() +3
+  var year = date.getFullYear() - 2000
+  var name = month.toString() + "/" + year.toString()
+  var source = SpreadsheetApp.getActiveSpreadsheet()
+  if (!source.getSheetByName(name)){
+
+  var sheet = source.getSheetByName("template")
+  var dest = sheet.copyTo(source)
+  dest.setName(name).activate()
+  
+  var rangesToProtect = ["A:B", "1:2"]
+  rangesToProtect.forEach((r) => {
+    dest.getRange(r).protect().removeEditor("levchash@levchash.co.il")
+  })
+  
+  }
+  
+}
+
+function lastValue(sheetName) {  
+  
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName)
+  var lastRow = sheet.getMaxRows();
+  
+  var values = sheet.getRange("A1:A" + lastRow).getValues();
+
+  for (; values[lastRow - 1] == "" && lastRow > 0; lastRow--) {}
+  
+  
+  return lastRow + 1;
+}
+
