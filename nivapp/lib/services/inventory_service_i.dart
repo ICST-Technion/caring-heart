@@ -1,5 +1,3 @@
-import 'package:nivapp/pickup_point.dart';
-import 'package:nivapp/format_date.dart';
 import 'package:nivapp/item_spec.dart';
 
 abstract class InventoryServiceI {

@@ -180,6 +180,10 @@ class Item {
     );
   }
 
+  factory Item.emptyItem() {
+    return Item(address: "", floor: "", apartment: "", neighborhood: "", city: "", comments: "", date: DateTime.now(), description: "", email: "", isChecked: false, isCollected: false, name: "", id: "", phone: "");
+  }
+
   String toJson() => json.encode(toMap());
 
   @override
@@ -225,6 +229,7 @@ class Item {
         id.hashCode ^
         phone.hashCode;
   }
+
 }
 
 DateTime getDateTimeType(dynamic dateTimeOrTimestep) {

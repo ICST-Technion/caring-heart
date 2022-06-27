@@ -1,4 +1,4 @@
-import 'package:time_range_picker/time_range_picker.dart';
+import 'package:nivapp/route_planner/date_utility.dart';
 
 
 String formatDate(DateTime date) {
@@ -9,12 +9,14 @@ String formatDate(DateTime date) {
       date.day.toString();
 }
 
-String formatTimeRange(TimeRange? range) {
+String formatTimeRange(MyDateTimeRange? range) {
   if (range == null) return "";
-  String start = range.startTime.toString();
-  start = start.substring(start.indexOf('(') + 1, start.lastIndexOf(')'));
-  String end = range.endTime.toString();
-  end = end.substring(end.indexOf('(') + 1, end.lastIndexOf(')'));
+  String start = range.start.hour < 10 ? '0' : '';
+  start += range.start.hour.toString() + ":";
+  start += (range.start.minute < 10 ? '0' : '') + range.start.minute.toString();
+  String end = range.end.hour < 10 ? '0' : '';
+  end += range.end.hour.toString() + ":";
+  end += (range.end.minute < 10 ? '0' : '') + range.end.minute.toString();
   return start + ' - ' + end;
 
 }

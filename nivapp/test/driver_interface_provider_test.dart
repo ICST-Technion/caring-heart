@@ -2,8 +2,6 @@ import 'package:mockito/mockito.dart';
 import 'package:nivapp/driver_interface/driver_interface_provider.dart';
 import 'package:nivapp/mock_definitions.mocks.dart';
 import 'package:nivapp/pickup_point.dart';
-import 'package:nivapp/pickup_report.dart';
-import 'package:nivapp/services/report_service_i.dart';
 import 'package:test/test.dart';
 
 class InitDriverProviderResult {

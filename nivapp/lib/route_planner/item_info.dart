@@ -11,7 +11,7 @@ List<Widget> ItemInfoTextBoxes(Item item, BuildContext context) {
     1: item.address,
     2: item.neighborhood,
     3: item.city,
-    4: phones[0].phoneNumber,
+    4: phones.isNotEmpty ? phones[0].phoneNumber : '-',
     5: phones.length > 1 ? phones[1].phoneNumber : '-',
     6: item.description,
     7: item.date,

@@ -9,6 +9,7 @@ import 'package:nivapp/item_spec.dart' as _i2;
 import 'package:nivapp/mock_definitions.dart' as _i11;
 import 'package:nivapp/pickup_point.dart' as _i8;
 import 'package:nivapp/pickup_report.dart' as _i3;
+import 'package:nivapp/route_planner/date_utility.dart';
 import 'package:nivapp/services/auth_service_i.dart' as _i9;
 import 'package:nivapp/services/init_service.dart' as _i10;
 import 'package:nivapp/services/inventory_service_i.dart' as _i4;
@@ -223,9 +224,9 @@ class MockPickupPoint extends _i1.Mock implements _i8.PickupPoint {
       (super.noSuchMethod(Invocation.getter(#item), returnValue: _FakeItem_1())
           as _i2.Item);
   @override
-  TimeRange get pickupTime =>
+  MyDateTimeRange get pickupTime =>
       (super.noSuchMethod(Invocation.getter(#pickupTime), returnValue: '')
-          as TimeRange);
+          as MyDateTimeRange);
 }
 
 /// A class which mocks [MyFunction].
