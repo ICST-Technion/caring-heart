@@ -26,8 +26,14 @@ function getActionForEdit(isNew, isFull, isEmpty){
       // it's new and the data is fully entered so we want to create it
       return okType('create')
     }else{
+      if(isEmpty)
+      {
+        //empty line
+        return okType('empty')
+      }else{
       // not filled all data yet, then continue
       return okType('continue')
+      }
     }
   }else{
     if(isEmpty){
@@ -39,7 +45,7 @@ function getActionForEdit(isNew, isFull, isEmpty){
         return okType('update')
       }else{
         // item exists but in an intermidiate state so we don't want to update it
-        return okType('contine')
+        return okType('continue')
       }
     }
   }
