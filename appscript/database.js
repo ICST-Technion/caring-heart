@@ -51,7 +51,16 @@ function prepItemForDb(item){
   return item
 }
 
-function getInventory(collection="inventoryTest", firestoreProvider=firestore.getInstance){
+// different case for production v.s test
+function getCollectionName(spreadsheetIds=constants.SPREADSHEET_IDS){
+  return {
+    [spreadsheetIds.PRODUCTION] : 'inventory',
+    [spreadsheetIds.TEST] : 'inventoryTest',
+  }[SpreadsheetApp.getActiveSpreadsheet().getId()]
+}
+
+function getInventory(getCollection=getCollectionName, firestoreProvider=firestore.getInstance){
+  const collection = getCollection()
   const firestoreInstance = firestoreProvider()
   return {
     addItem: function(item, fromSheets=true){
