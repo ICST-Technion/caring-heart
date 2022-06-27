@@ -24,8 +24,20 @@ class RoutePlannerProvider with ChangeNotifier {
   RoutePlannerProvider(this._routeService,
       {required List<Item> itemList, required List<PickupPoint> pickupPoints}) {
     this.itemList = itemList.map((item) => Tuple2(false, item)).toList();
+    this.itemList.sort(sortByUrgency);
     _dateBtnTextCtrl.text = DateUtil.formatDate(DateTime.now());
     selectedItems = pickupPoints;
+  }
+
+  int sortByUrgency(Tuple2 a, Tuple2 b) {
+    int result = 0;
+    if (a.item2.comments.contains("דחוף")) {
+      result--;
+    }
+    if (a.item2.comments.contains("דחוף")) {
+      result++;
+    }
+    return result;
   }
 
   /*void Sort(int Function(Item, Item) sortFunc) {
@@ -47,6 +59,7 @@ class RoutePlannerProvider with ChangeNotifier {
   Future<void> addPickupPointToDB(PickupPoint pickupPoint) async {
     selectedItems.add(pickupPoint);
     itemList.removeWhere((t) => t.item2 == pickupPoint.item);
+    this.itemList.sort(sortByUrgency);
     isUpdating = true;
     notifyListeners();
     await _routeService
@@ -91,10 +104,14 @@ class RoutePlannerProvider with ChangeNotifier {
     final prevRoute = getDailyPickupPoints(pickupPoint);
     selectedItems.remove(pickupPoint);
     itemList.add(Tuple2<bool, Item>(false, pickupPoint.item));
+    this.itemList.sort(sortByUrgency);
     isUpdating = true;
     notifyListeners();
-    await _routeService
-        .replaceRoute(prevRoute, getDailyPickupPoints(pickupPoint), pickupPoint.pickupTime!.start, pickupPoint.pickupTime!.start);
+    await _routeService.replaceRoute(
+        prevRoute,
+        getDailyPickupPoints(pickupPoint),
+        pickupPoint.pickupTime!.start,
+        pickupPoint.pickupTime!.start);
     isUpdating = false;
     notifyListeners();
   }
