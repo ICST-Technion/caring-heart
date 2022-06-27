@@ -28,10 +28,10 @@ const constants = {
     "city",
     "neighborhood", 
     "address",
+    "floor",
+    "apartment",
     "phone", 
     "description", 
     "comments",
-    "floor",
-    "apartment",
   ]
 }
