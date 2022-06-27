@@ -4,7 +4,7 @@ import 'package:nivapp/services/report_service_i.dart';
 import '../pickup_report.dart';
 
 class ReportService implements ReportServiceI {
-  get _collection => FirebaseFirestore.instance.collection('reportsTest');
+  get _collection => FirebaseFirestore.instance.collection('reports');
 
   Future<void> _uploadReport(
           Map<String, dynamic> reportJson, String reportId) =>
