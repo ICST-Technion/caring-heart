@@ -28,7 +28,7 @@ const constants = {
     // NEW
     {name: "apartment", required: true, checkForEmptyness: true},
 
-    {name: "neighborhood", required: true, checkForEmptyness: true},
+    {name: "neighborhood", required: false, checkForEmptyness: true},
     {name: "city", required: true, checkForEmptyness: true},
     {name: "phone", required: true, checkForEmptyness: true},
 
@@ -38,7 +38,7 @@ const constants = {
     {name: "description", required: true, checkForEmptyness: true},
     {name: "date", required: true, checkForEmptyness: true},
     {name: "comments", required: false, checkForEmptyness: true},
-    {name: "email", required: true, checkForEmptyness: true},
+    {name: "email", required: false, checkForEmptyness: true},
     {name: "isChecked", required: true, checkForEmptyness: false},
     {name: "isCollected", required: true, checkForEmptyness: false},
   ],
