@@ -7,6 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nivapp/pickup_point.dart';
 import 'package:nivapp/format_date.dart';
 
+
+/// Handles requests about routes
 class RoutesService implements RoutesServiceI {
   final InventoryServiceI inventoryService;
   final FirebaseFirestore firebaseFirestore;
@@ -27,6 +29,7 @@ class RoutesService implements RoutesServiceI {
   }
 
   @override
+  /// Returns the PickupPoints in current week
   Future<List<PickupPoint>> getWeeklyItems(
       {DateTime Function() getCurrentDay = DateTime.now}) async {
     final day = getCurrentDay();
@@ -40,6 +43,7 @@ class RoutesService implements RoutesServiceI {
   }
 
   @override
+  /// Returns a list of all the pickup points currently in use.
   Future<List<PickupPoint>> getAllPickupPoints() async {
     final items = await firebaseFirestore.collection("routes").get();
     List<PickupPoint> pickupPoints = [];
@@ -61,6 +65,7 @@ class RoutesService implements RoutesServiceI {
 
     return pickupPoints;
   }
+
 
   @override
   Future<void> replaceRoute(List<PickupPoint> prevRoute,
@@ -91,7 +96,7 @@ class RoutesService implements RoutesServiceI {
     }
   }
 
-  /// add route to firebase routes database from PickupPoint list.
+  /// Add route to firebase routes database from PickupPoint list.
   @override
   Future<void> addRouteByItemList(List<PickupPoint> list, DateTime date) async {
     bool found = false;

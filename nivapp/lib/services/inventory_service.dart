@@ -2,6 +2,8 @@ import 'package:nivapp/services/inventory_service_i.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nivapp/item_spec.dart';
 
+
+/// Handles requests about inventory items.
 class InventoryService implements InventoryServiceI {
   final FirebaseFirestore fbInstance;
   InventoryService(this.fbInstance);

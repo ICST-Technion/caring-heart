@@ -3,6 +3,8 @@ import 'package:nivapp/main.dart';
 import 'package:nivapp/services/auth_service_i.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
+/// Service that handles authentication of users.
 class MyAuth implements AuthServiceI {
   final FirebaseAuth auth;
   final Future<SharedPreferences> sharedPreferences;
@@ -12,6 +14,7 @@ class MyAuth implements AuthServiceI {
   bool remember = false;
   MyAuth({required this.auth, required this.sharedPreferences});
 
+  /// Returns whether a user was already signed in from current device.
   @override
   Future<bool> isUserRemembered() async {
     bool? result =
@@ -20,6 +23,8 @@ class MyAuth implements AuthServiceI {
     return result != null && result;
   }
 
+
+  /// Handles sign in of a user.
   @override
   Future<String?> signInWithEmailPassword(String email, String password) async {
     User? user;

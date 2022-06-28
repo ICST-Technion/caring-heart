@@ -3,6 +3,8 @@ import 'package:nivapp/services/report_service_i.dart';
 
 import '../pickup_report.dart';
 
+
+/// Handles reports of collected or uncollected PickupItems
 class ReportService implements ReportServiceI {
   get _collection => FirebaseFirestore.instance.collection('reports');
 
