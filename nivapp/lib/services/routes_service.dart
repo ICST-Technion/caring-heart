@@ -99,13 +99,14 @@ class RoutesService implements RoutesServiceI {
     var ref = firebaseFirestore.collection('routes');
     var snapshot = await ref.where('date', isEqualTo: formatDate(date)).get();
     if (snapshot.docs.isNotEmpty) {
+      final items = snapshot.docs[0].data()['items'];
+      items.addAll(list.map((pickup) => {
+        'itemID': pickup.item.id,
+        'time': formatTimeRange(pickup.pickupTime)
+      })
+          .toList());
       await snapshot.docs[0].reference.set({
-        'items': list
-            .map((pickup) => {
-                  'itemID': pickup.item.id,
-                  'time': formatTimeRange(pickup.pickupTime)
-                })
-            .toList()
+        'items': items
       }, SetOptions(merge: true));
       found = true;
     }

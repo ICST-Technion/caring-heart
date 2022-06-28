@@ -58,8 +58,8 @@ class RoutePlannerProvider with ChangeNotifier {
 
   Future<void> addPickupPointToDB(PickupPoint pickupPoint) async {
     selectedItems.add(pickupPoint);
-    itemList.removeWhere((t) => t.item2 == pickupPoint.item);
-    this.itemList.sort(sortByUrgency);
+    //itemList.removeWhere((t) => t.item2 == pickupPoint.item);
+    //itemList.sort(sortByUrgency);
     isUpdating = true;
     notifyListeners();
     await _routeService
@@ -103,8 +103,8 @@ class RoutePlannerProvider with ChangeNotifier {
   removePickupPointFromDB(PickupPoint pickupPoint) async {
     final prevRoute = getDailyPickupPoints(pickupPoint);
     selectedItems.remove(pickupPoint);
-    itemList.add(Tuple2<bool, Item>(false, pickupPoint.item));
-    this.itemList.sort(sortByUrgency);
+    //itemList.add(Tuple2<bool, Item>(false, pickupPoint.item));
+    //itemList.sort(sortByUrgency);
     isUpdating = true;
     notifyListeners();
     await _routeService.replaceRoute(
