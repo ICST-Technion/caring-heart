@@ -14,23 +14,25 @@ void main() {
       final fakeFb = FakeFirebaseFirestore();
       var collection = fakeFb.collection('routesTest');
       final date = DateTime(2020, 1, 1);
+      DateTime start = DateTime.parse('2020-01-01 10:00:00Z');
+      DateTime end = DateTime.parse('2020-01-01 10:30:00Z');
+      final dateRange = MyDateTimeRange(start: start, end: end);
       await collection.add({
         'date': formatDate(date),
-        'items:': [
-          {'itemID': 'id', 'time': '8:00'}
+        'items': [
+          {'itemID': 'id', 'time': formatTimeRange(dateRange)}
         ]
       });
+
       final inventoryMock = MockInventoryServiceI();
       final pp = MockPickupPoint();
 
-      DateTime start = DateTime.parse('2020-07-20 10:00:00Z');
-      DateTime end = DateTime.parse('2020-07-20 10:30:00Z');
-      when(pp.pickupTime).thenReturn(MyDateTimeRange(start: start, end: end));
+      when(pp.pickupTime).thenReturn(dateRange);
       final item = MockItem();
       when(item.id).thenReturn('id');
       when(pp.item).thenReturn(item);
 
-      final inventory = RoutesService(inventoryMock, fakeFb);
+      final inventory = RoutesService(inventoryMock, fakeFb, 'routesTest');
       await inventory.addRouteByItemList([pp], date);
       final updatedRoute = (await collection.get()).docs[0].data();
       expect(updatedRoute.containsKey('date'), true);
