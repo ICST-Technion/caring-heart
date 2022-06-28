@@ -13,10 +13,12 @@ late final Injector injector;
 
 void main() {
   const offline = false;
+  const useTestCollectionAndSheet = false;
   if (offline) {
     injector = OfflineMockModule();
   } else {
-    injector = ProductionModule();
+    injector =
+        ProductionModule(useTestCollectionAndSheet: useTestCollectionAndSheet);
   }
 
   runApp(const MyApp());
@@ -54,25 +56,27 @@ class MyApp extends StatelessWidget {
 
   Scaffold homePageUI(BuildContext context) {
     return Scaffold(
-              body: Center(
-                child: Container(
-                  width: 500,
-                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-                ElevatedButton(
-                    child: Text("תכנון מסלול"),
-                    onPressed: () {
-                      Navigator.of(context).pushReplacementNamed("/planner");
-                    }),
-                ElevatedButton(
-                    child: Text("ממשק נהגים"),
-                    onPressed: () {
-                      Navigator.of(context).pushReplacementNamed("/drivers");
-                    })
-            ],
-          ),
-                ),
-              ));
+        body: Center(
+      child: Container(
+        width: 500,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                child: Text("תכנון מסלול"),
+                onPressed: () {
+                  Navigator.of(context).pushReplacementNamed("/planner");
+                }),
+            ElevatedButton(
+                child: Text("ממשק נהגים"),
+                onPressed: () {
+                  Navigator.of(context).pushReplacementNamed("/drivers");
+                })
+          ],
+        ),
+      ),
+    ));
   }
 }
 

@@ -7,11 +7,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nivapp/pickup_point.dart';
 import 'package:nivapp/format_date.dart';
 
+/// Handles requests about routes
 class RoutesService implements RoutesServiceI {
   final InventoryServiceI inventoryService;
   final FirebaseFirestore firebaseFirestore;
+  final String collectionPath;
 
-  RoutesService(this.inventoryService, this.firebaseFirestore);
+  RoutesService(
+      this.inventoryService, this.firebaseFirestore, this.collectionPath);
 
   /// Returns the items in current day's route.
   /// new name option: getDailyRoute.
@@ -19,7 +22,7 @@ class RoutesService implements RoutesServiceI {
   Future<List<PickupPoint>> getItems(
       {DateTime Function() getDay = DateTime.now}) async {
     final day = getDay();
-    final route = firebaseFirestore.collection('routes');
+    final route = firebaseFirestore.collection(collectionPath);
     return route
         .where('date', isEqualTo: formatDate(day))
         .get()
@@ -27,6 +30,8 @@ class RoutesService implements RoutesServiceI {
   }
 
   @override
+
+  /// Returns the PickupPoints in current week
   Future<List<PickupPoint>> getWeeklyItems(
       {DateTime Function() getCurrentDay = DateTime.now}) async {
     final day = getCurrentDay();
@@ -40,8 +45,10 @@ class RoutesService implements RoutesServiceI {
   }
 
   @override
+
+  /// Returns a list of all the pickup points currently in use.
   Future<List<PickupPoint>> getAllPickupPoints() async {
-    final items = await firebaseFirestore.collection("routes").get();
+    final items = await firebaseFirestore.collection(collectionPath).get();
     List<PickupPoint> pickupPoints = [];
     for (final doc in items.docs) {
       final temp = await _getPickupPointListFromRouteJson(doc.data());
@@ -65,7 +72,7 @@ class RoutesService implements RoutesServiceI {
   @override
   Future<void> replaceRoute(List<PickupPoint> prevRoute,
       List<PickupPoint> newRoute, DateTime prevDate, DateTime newDate) async {
-    var ref = firebaseFirestore.collection('routes');
+    var ref = firebaseFirestore.collection(collectionPath);
     var snapshot =
         await ref.where('date', isEqualTo: formatDate(prevDate)).get();
     if (snapshot.docs.isNotEmpty) {
@@ -91,23 +98,23 @@ class RoutesService implements RoutesServiceI {
     }
   }
 
-  /// add route to firebase routes database from PickupPoint list.
+  /// Add route to firebase routes database from PickupPoint list.
   @override
   Future<void> addRouteByItemList(List<PickupPoint> list, DateTime date) async {
     bool found = false;
     //check if a route already exists, and if so, update it
-    var ref = firebaseFirestore.collection('routes');
+    var ref = firebaseFirestore.collection(collectionPath);
     var snapshot = await ref.where('date', isEqualTo: formatDate(date)).get();
     if (snapshot.docs.isNotEmpty) {
       final items = snapshot.docs[0].data()['items'];
-      items.addAll(list.map((pickup) => {
-        'itemID': pickup.item.id,
-        'time': formatTimeRange(pickup.pickupTime)
-      })
+      items.addAll(list
+          .map((pickup) => {
+                'itemID': pickup.item.id,
+                'time': formatTimeRange(pickup.pickupTime)
+              })
           .toList());
-      await snapshot.docs[0].reference.set({
-        'items': items
-      }, SetOptions(merge: true));
+      await snapshot.docs[0].reference
+          .set({'items': items}, SetOptions(merge: true));
       found = true;
     }
     //if no doc was found, add a new one
