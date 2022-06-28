@@ -2,6 +2,7 @@ import 'package:mockito/mockito.dart';
 import 'package:nivapp/driver_interface/driver_interface_provider.dart';
 import 'package:nivapp/mock_definitions.mocks.dart';
 import 'package:nivapp/pickup_point.dart';
+import 'package:nivapp/route_planner/date_utility.dart';
 import 'package:test/test.dart';
 
 class InitDriverProviderResult {
@@ -24,6 +25,10 @@ void main() {
   group('DriverInterfaceProvider', () {
     test('should be intialized with all points in uncollectedPoints', () async {
       List<PickupPoint> route = List.generate(10, (index) => MockPickupPoint());
+      MyDateTimeRange mdtrStub = MyDateTimeRange(
+          start: DateTime.parse("2020-07-07"),
+          end: DateTime.parse("2020-07-08"));
+      route.forEach((pp) => when(pp.pickupTime).thenReturn(mdtrStub));
       final i = initDriverProvider(route);
 
       expect(i.provider.collectedPickupPoints, isEmpty);

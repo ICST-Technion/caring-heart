@@ -2,6 +2,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mockito/mockito.dart';
 import 'package:nivapp/format_date.dart';
 import 'package:nivapp/mock_definitions.mocks.dart';
+import 'package:nivapp/route_planner/date_utility.dart';
 import 'package:nivapp/services/routes_service.dart';
 import 'package:test/test.dart';
 
@@ -21,7 +22,10 @@ void main() {
       });
       final inventoryMock = MockInventoryServiceI();
       final pp = MockPickupPoint();
-      when(pp.pickupTime).thenReturn('8:00');
+
+      DateTime start = DateTime.parse('2020-07-20 10:00:00Z');
+      DateTime end = DateTime.parse('2020-07-20 10:30:00Z');
+      when(pp.pickupTime).thenReturn(MyDateTimeRange(start: start, end: end));
       final item = MockItem();
       when(item.id).thenReturn('id');
       when(pp.item).thenReturn(item);
