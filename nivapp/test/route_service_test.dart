@@ -1,13 +1,9 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:mockito/mockito.dart';
 import 'package:nivapp/format_date.dart';
-import 'package:nivapp/item_spec.dart';
 import 'package:nivapp/mock_definitions.mocks.dart';
-import 'package:nivapp/services/inventory_service.dart';
 import 'package:nivapp/services/routes_service.dart';
 import 'package:test/test.dart';
-
-import 'inventory_service_test.dart';
 
 void main() {
   group('RouteService', () {

@@ -6,6 +6,7 @@ import 'package:nivapp/format_date.dart';
 // import 'cat.mocks.dart';
 import 'package:nivapp/item_spec.dart';
 import 'package:nivapp/pickup_point.dart';
+import 'package:nivapp/route_planner/date_utility.dart';
 import 'package:nivapp/services/auth_service_i.dart';
 import 'package:nivapp/services/init_service.dart';
 
@@ -80,10 +81,9 @@ Injector OfflineMockModule() {
   final pickupPoints = Iterable<int>.generate(10)
       .map((i) => PickupPoint(
           item: getItemMock(i),
-          pickupTime: TimeRange(
-              startTime: TimeOfDay.fromDateTime(getDateMock(i)),
-              endTime: TimeOfDay.fromDateTime(
-                  getDateMock(i).add(const Duration(hours: 2))))))
+          pickupTime: MyDateTimeRange(
+              start: getDateMock(i),
+              end: getDateMock(i).add(const Duration(hours: 2)))))
       .toList();
 
   injector.map<InventoryServiceI>((i) => getInventoryMock(inventoryItems),

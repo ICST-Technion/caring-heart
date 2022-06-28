@@ -17,10 +17,15 @@ class DriverInterfaceProvider with ChangeNotifier {
           (pp) => pickupPointsStatusMap[pp]! != PickupReportStatus.uncollected)
       .toList();
 
-  List<PickupPoint> get uncollectedPickupPoints => _todaysRoute
-      .where(
-          (pp) => pickupPointsStatusMap[pp]! == PickupReportStatus.uncollected)
-      .toList();
+  List<PickupPoint> get uncollectedPickupPoints {
+    final pList = _todaysRoute
+        .where((pp) =>
+            pickupPointsStatusMap[pp]! == PickupReportStatus.uncollected)
+        .toList();
+    pList.sort((PickupPoint p1, PickupPoint p2) =>
+        p1.pickupTime!.start.compareTo(p2.pickupTime!.start));
+    return pList;
+  }
 
   DriverInterfaceProvider(this._todaysRoute, this._reportService) {
     pickupPointsStatusMap = {

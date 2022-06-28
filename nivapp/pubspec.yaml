@@ -43,6 +43,8 @@ dependencies:
   expandable: ^5.0.1
   flutter_typeahead: ^3.2.4
   tuple: ^2.0.0
+  calendar_view: any
+  syncfusion_flutter_calendar: any
 
 
 dev_dependencies:

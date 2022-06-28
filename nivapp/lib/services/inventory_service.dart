@@ -10,7 +10,7 @@ class InventoryService implements InventoryServiceI {
   /// Items stuff
   @override
   Future<Item> getItemByID(String id) async {
-    const collectionPath = 'inventoryTest';
+    const collectionPath = 'inventory';
     final inventory = fbInstance.collection(collectionPath);
     final itemData = await inventory.doc(id).get();
     if (!itemData.exists) {
@@ -24,7 +24,7 @@ class InventoryService implements InventoryServiceI {
   /// Items stuff.
   @override
   Future<void> collectItem(id) async {
-    final route = fbInstance.collection('inventoryTest');
+    final route = fbInstance.collection('inventory');
     await route.doc(id).update({
       'isCollected': true,
     });
@@ -35,7 +35,7 @@ class InventoryService implements InventoryServiceI {
   @override
   Future<List<Item>> getCheckedItems() async {
     // TODO: might have bugs.
-    final ref = fbInstance.collection('inventoryTest');
+    final ref = fbInstance.collection('inventory');
     return ref
         .where('isCollected', isEqualTo: false)
         .get()
