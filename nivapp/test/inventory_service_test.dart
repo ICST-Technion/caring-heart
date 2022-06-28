@@ -39,7 +39,7 @@ void main() {
         () async {
       final fakeFb = FakeFirebaseFirestore();
       var itemJson = getItem();
-      final addedItem = await fakeFb.collection('inventoryTest').add(itemJson);
+      final addedItem = await fakeFb.collection('inventory').add(itemJson);
 
       final inventory = InventoryService(fakeFb);
       var actual = await inventory.getItemByID(addedItem.id);
