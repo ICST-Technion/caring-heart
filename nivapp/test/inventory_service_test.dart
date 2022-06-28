@@ -46,5 +46,20 @@ void main() {
       var item = Item.fromJson(addedItem.id, itemJson);
       expect(actual, equals(item));
     });
+
+    // TODO: this is a new test to be checked. Currently not working.
+    // test('item can be marked as checked', () async {
+    //   final fakeFb = FakeFirebaseFirestore();
+    //   final inventory = InventoryService(fakeFb);
+    //   var itemJson1 = getItem();
+    //   var itemJson2 = getItem();
+
+    //   final addedItem1 = await fakeFb.collection('inverntory').add(itemJson1);
+    //   final addedItem2 = await fakeFb.collection('inverntory').add(itemJson2);
+
+    //   List<Item> checkedList = await inventory.getCheckedItems();
+
+    //   expect(checkedList, equals([Item.fromJson(addedItem2.id, itemJson2)]));
+    // });
   });
 }
