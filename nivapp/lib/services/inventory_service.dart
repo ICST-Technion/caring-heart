@@ -6,8 +6,8 @@ class InventoryService implements InventoryServiceI {
   final FirebaseFirestore fbInstance;
   InventoryService(this.fbInstance);
 
-  /// returns item by its id.
-  /// Items stuff
+  /// Returns item by its id.
+  /// Items stuff.
   @override
   Future<Item> getItemByID(String id) async {
     const collectionPath = 'inventory';
@@ -20,7 +20,7 @@ class InventoryService implements InventoryServiceI {
     return Item.fromJson(id, itemData.data()!);
   }
 
-  /// Check item as collected.
+  /// Mark item as collected.
   /// Items stuff.
   @override
   Future<void> collectItem(id) async {
@@ -31,19 +31,20 @@ class InventoryService implements InventoryServiceI {
   }
 
   /// Returns all collected items.
-  /// Items stuff
+  /// Items stuff.
   @override
   Future<List<Item>> getCheckedItems() async {
     // TODO: might have bugs.
     final ref = fbInstance.collection('inventory');
     return ref
         .where('isCollected', isEqualTo: false)
+        // .where('isChecked', isEqualTo: true) TODO: add this? it is checked in _createItemListFromInventory for some reason
         .get()
         .then((res) => _createItemListFromInventory(res.docs));
   }
 
   /// Returns Item list from firebase json data of all items.
-  /// items stuff.
+  /// Items stuff.
   Future<List<Item>> _createItemListFromInventory(
       List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) async {
     List<Item> items = [];
